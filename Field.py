@@ -5,3 +5,4 @@
 # Pathvector P2
 # is player on this?
 # WallN, WallE, WallS, WallW
+# can currentplayer move here?

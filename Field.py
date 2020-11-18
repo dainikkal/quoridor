@@ -1,4 +1,4 @@
-from helper import BOARDSIZEMID, Player, Dir, BOARDSIZE, INFINITE, mir
+from helper import BOARDSIZEMID, Player, Dir, BOARDSIZE, INFINITE, mir, UpDown
 
 #TO Include
 # Pos X
@@ -12,7 +12,7 @@ from helper import BOARDSIZEMID, Player, Dir, BOARDSIZE, INFINITE, mir
 
 class Field():
   
-  def __init__(self, posX, posY, player = Player.Empty):
+  def __init__(self, posX, posY):
     self.posX = posX
     self.posY = posY
     self.Walls = [False] * 4
@@ -20,19 +20,24 @@ class Field():
     self.Walls[Dir.E] = False
     self.Walls[Dir.S] = False
     self.Walls[Dir.W] = False
-    self.setPlayer(player)
+    self.player = Player.Empty
+
     #a* part
-    #player1towardstop
-    self.up_heuristic =  posY;
-    self.up_distToP = INFINITE if player != Player.P1 else 0
-    self.up_nexts = [Dir.N] if posY != 0 else []
-    self.up_prevs = [Dir.S] if posY != BOARDSIZE else []
-    self.up_inDisco = False
+    self.heuristic = [posY, BOARDSIZE - posY]
+    #self.distToP = [INFINITE, INFINITE]
+    self.nexts = [[Dir.N] if posY != 0 else [],
+                  [Dir.S] if posY != BOARDSIZE else []]
+
+    self.prevs = [[Dir.S] if posY != BOARDSIZE else [],
+                  [Dir.N] if posY != 0 else []]
+    self.inDisco = [False, False]
+
     pass
 
   def setPlayer(self, player = Player.Empty): 
     self.player = player
-    self.up_distToP = INFINITE if player != Player.P1 else 0
+    #self.distToP[UpDown.U] = INFINITE if player != Player.P1 else 0
+    #self.distToP[UpDown.D] = INFINITE if player != Player.P2 else 0
   
   def getPos(self): return (self.posX, self.posY)
 
@@ -48,46 +53,48 @@ class Field():
     if dir == Dir.W: return self.getW() if self.posX != 0 else None
 
   def getWall(self, dir): return self.Walls[dir]
-  def setWall(self, dir, fields, upDisco, downDisco): 
-    if dir in self.up_nexts:
-      self.removeUpNextAddToUpDisco(dir, fields, upDisco)
+  def setWall(self, dir, fields, disco): 
+    if dir in self.nexts[UpDown.U]:
+      self.removeNextAddToDisco(UpDown.U, dir, fields, disco)
+    if dir in self.nexts[UpDown.D]:
+      self.removeNextAddToDisco(UpDown.D, dir, fields, disco)
     self.Walls[dir] = True
 
-  #A* player 1 stuff
-  def getUpHeuristic(self): return self.up_heuristic
-  def setUpHeuristic(self, h): self.up_heuristic = h
+  def getHeuristic(self, i): return self.heuristic[i]
+  def setHeuristic(self, i, h): self.heuristic[i] = h
 
-  def getUpDistToP(self): return self.up_distToP
-  def setUpDistToP(self, dist): self.up_distToP = dist
+  #def getDistToP(self, i): return self.distToP[i]
+  #def setDistToP(self, i, dist): self.distToP[i] = dist
 
-  def getUpNexts(self): return self.up_nexts
-  def addToUpNexts(self, dir): 
-    if dir not in self.up_nexts:
-      self.up_nexts.append(dir)
-  def removeFromUpNexts(self, dir): 
-    if dir in self.up_nexts:
-      self.up_nexts.remove(dir) 
+  def getNexts(self, i): return self.nexts[i]
+  def addToNexts(self, i, dir):
+    if dir not in self.nexts[i]:
+      self.nexts[i].append(dir)
+  def removeFromNexts(self, i, dir):
+    if dir in self.nexts[i]:
+      self.nexts[i].remove(dir)
       
-  def getUpPrevs(self): return self.up_prevs
-  def addToUpPrevs(self, dir): 
-    if dir not in self.up_prevs:
-      self.up_prevs.append(dir)
-  def removeFromUpPrevs(self, dir): 
-    if dir in self.up_prevs:
-      self.up_prevs.remove(dir)
+  def getPrevs(self, i): return self.prevs[i]
+  def addToPrevs(self, i, dir):
+    if dir not in self.prevs[i]:
+      self.prevs[i].append(dir)
+  def removeFromPrevs(self, i, dir):
+    if dir in self.prevs[i]:
+      self.prevs[i].remove(dir)
 
-  def getUpDisco(self): return self.up_inDisco
-  def setUpDisco(self, val): self.up_inDisco = val
+  def getDisco(self, i): return self.inDisco[i]
+  def setDisco(self, i, val): self.inDisco[i] = val
 
-  def setUpUnreachable(self): 
-    self.setUpDisco(False)
-    self.setUpHeuristic(INFINITE)
-  
-  def removeUpNextAddToUpDisco(self, dir, fields, upDisco):    
-    if dir in self.up_nexts:
-      self.removeFromUpNexts(dir)
+  def setUnreachable(self, i):
+    self.setDisco(i, False)
+    self.setHeuristic(i, INFINITE)
+    #self.setDistToP(i, INFINITE)
+
+  def removeNextAddToDisco(self, i, dir, fields, disco):
+    if dir in self.nexts[i]:
+      self.removeFromNexts(i, dir)
       posX, posY = self.getDir(dir)
-      fields[posX][posY].removeFromUpPrevs(mir(dir))
-      if not self.up_nexts: #if empty
-        self.setUpDisco(True)
-        upDisco.append((self.getUpHeuristic(), self.getPos()))
+      fields[posX][posY].removeFromPrevs(i, mir(dir))
+      if not self.nexts[i]:
+        self.setDisco(i, True)
+        disco[i].append((self.getHeuristic(i), self.getPos()))

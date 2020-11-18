@@ -9,6 +9,10 @@ class Dir():
   S = 2
   W = 3
 
+class UpDown():
+  U = 0#Up
+  D = 1#Down
+
 class Orientation():
   H = 0
   V = 1
@@ -42,4 +46,5 @@ class WallLegality():
 
 BOARDSIZE = 4
 BOARDSIZEMID = 2
+HEURISTICJUMP = 100
 INFINITE = 9999999

@@ -1,7 +1,7 @@
 class Player():
-  Empty = 0
-  P1 = 1
-  P2 = 2
+  Empty = -1
+  P1 = 0
+  P2 = 1
 
 class Dir():
   N = 0
@@ -12,6 +12,9 @@ class Dir():
 class UpDown():
   U = 0#Up
   D = 1#Down
+class LeftRight():
+  L = 0#Up
+  R = 1#Down
 
 class Orientation():
   H = 0

@@ -13,7 +13,9 @@ class Wall():
     self.arms = [None] * 2
     pass
 
-  def setWall(self): self.set = True
+  def setWall(self, val=True): self.set = True
+  def isWallSet(self): return self.set
+  def doesWalltouchBorder(self): return self.touchesBorder
 
 class WallH(Wall):
   def __init__(self, x, y):

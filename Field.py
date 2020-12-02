@@ -27,6 +27,7 @@ class Field():
     self.disconnected = [False, False]
 
   def setPlayer(self, p = Player.Empty): self.player = p
+  def getPlayer(self): return self.player
   
   def getPos(self): return (self.x, self.y)
 

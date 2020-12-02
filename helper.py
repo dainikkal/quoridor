@@ -47,7 +47,12 @@ class WallLegality():
   WFree = 0x7
   EFree = 0xD
 
+class CycledetectionRetVal():
+  noContact = 0
+  Border = 1
+  Cycle = 2
+
 BOARDSIZE = 4
-BOARDSIZEMID = 2
+BOARDSIZEMID = int(BOARDSIZE / 2)
 HEURISTICJUMP = 100
 INFINITE = 9999999

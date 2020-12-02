@@ -1,36 +1,25 @@
+from Path import Path
 from Field import Field
-from helper import BOARDSIZE, BOARDSIZEMID, HEURISTICJUMP, Player, mir, UpDown
+from helper import BOARDSIZE, BOARDSIZEMID, Dir, HEURISTICJUMP, Player, mir, UpDown
 
 class FieldHandler():
   def __init__(self):
-    self.fields = [[Field(x,y) for y in range(BOARDSIZE+1)] for x in range(BOARDSIZE+1)]    
+    self.fields = [[Field(x, y) for y in range(BOARDSIZE+1)] for x in range(BOARDSIZE+1)]    
     self.fields[BOARDSIZEMID][BOARDSIZE].setPlayer(Player.P1)
     self.fields[BOARDSIZEMID][0].setPlayer(Player.P2)    
     self.disconnected = [[], []]
 
-  def setWall(self, x, y, d): self.fields[x][y].setWall(d)
-  def getWall(self, x, y, d): return self.fields[x][y].getWall(d)
+    self.help_checkedForPlayer = []
+    self.help_foundPlayer2 = False
+    self.help_foundGoalPlayer1 = False
+    self.help_foundGoalPlayer2 = False
 
+  def getWall(self, x, y, d): return self.fields[x][y].getWall(d)
+  def setWall(self, x, y, d, val=True): self.fields[x][y].setWall(d, val)
+  def getPlayer(self, x, y): return self.fields[x][y].getPlayer()
+  def getNexts(self, x, y, p): return self.fields[x][y].getNexts(p)
   def getDir(self, x, y, d): return self.fields[x][y].getDir(d)
   def getWallDir(self, x, y, d): return self.fields[x][y].getWallDir(d)
-  
-  def setHeurisitic(self, x, y, p, val): self.fields[x][y].setHeuristic(p, val)
-  def getHeuristic(self, x, y, p): return self.fields[x][y].getHeuristic(p)
-
-  def getNexts(self, x, y, p): return self.fields[x][y].getNexts(p)
-  def addToNexts(self, x, y, p, d): self.fields[x][y].addToNexts(p, d)
-  def removeFromNexts(self, x, y, p, d): self.fields[x][y].removeFromNexts(p, d)
-  
-  def getPrevs(self, x, y, p): return self.fields[x][y].getPrevs(p)
-  def addToPrevs(self, x, y, p, d): self.fields[x][y].addToPrevs(p, d)
-  def removeFromPrevs(self, x, y, p, d): self.fields[x][y].removeFromPrevs(p, d)
-
-  def setDisconnected(self, x, y, p, val): self.fields[x][y].setDisconnected(p, val)
-
-  def getDisconnected(self, x, y, p): return self.fields[x][y].getDisconnected(p)
-  def setDisconnected(self, x, y, p, val): self.fields[x][y].setDisconnected(p, val)
-  def appendDisconnected(self, p, h, x, y): self.disconnected[p].append((h, (x, y)))
-
 
 ##########################################################################################################################
                                                     #SET WALL
@@ -43,13 +32,11 @@ class FieldHandler():
         y (int): Y-coordinate
         d (Dir): Direction
     """
-    if d in self.getNexts(x, y, Player.P1):
-      self.__removeNextAndAddToDisco(x, y, Player.P1, d)
-    if d in self.getNexts(x, y, Player.P2):
-      self.__removeNextAndAddToDisco(x, y, Player.P2, d)
-    self.setWall(x, y, d)
+    self.removeNextAndAddToDisco(x, y, Player.P1, d)
+    self.removeNextAndAddToDisco(x, y, Player.P2, d)
+    self.fields[x][y].setWall(d)
 
-  def __removeNextAndAddToDisco(self, x, y, p, d):
+  def removeNextAndAddToDisco(self, x, y, p, d):
     """Removes Nexts and according Prevs and disconnects field 
 
     Args:
@@ -58,13 +45,14 @@ class FieldHandler():
         p (Player): Player
         d (Dir): Direction
     """
-    if d in self.getNexts(x, y, p):
-      self.removeFromNexts(x, y, p, d)
-      d_x, d_y = self.getDir(x, y, d)
-      self.removeFromPrevs(d_x, d_y, p, mir(d))
-      if not self.getNexts(x, y, p):
-        self.setDisconnected(x, y, p, True)
-        self.appendDisconnected(p, self.getHeuristic(x, y , p), x, y)
+    if d in self.fields[x][y].getNexts(p):
+      self.fields[x][y].removeFromNexts(p, d)
+      d_x, d_y = self.fields[x][y].getDir(d)
+      self.fields[d_x][d_y].removeFromPrevs(p, mir(d))
+      if not self.fields[x][y].getNexts(p):
+        self.fields[x][y].setDisconnected(p, True)
+        h = self.fields[x][y].getHeuristic(p)
+        self.disconnected[p].append((h, (x, y)))
 
 ##########################################################################################################################
                                                     #RECONNECT Disconnected Fields
@@ -76,22 +64,26 @@ class FieldHandler():
         p (Player): Player
     """
     prevDisconnects = None
+    repeatCount = len(self.disconnected[p])
 
     while self.disconnected[p]:
       tmpDisconnects = self.disconnected[p]
       tmpDisconnects.sort()
       smallest_h = tmpDisconnects[0][0]
       if smallest_h > HEURISTICJUMP * 2:
-        if self.__compareDisconnectsByPos(prevDisconnects, tmpDisconnects):
-          self.__setDisconnectedUnreachable(p)
-          break
+        if self.compareDisconnectsByPos(prevDisconnects, tmpDisconnects):
+          if repeatCount == 0:
+            self.setDisconnectedUnreachable(p)
+            break
+          repeatCount -= 1
+        else: repeatCount = len(self.disconnected[p])
         prevDisconnects = tmpDisconnects
 
       s_h, (s_x, s_y) = tmpDisconnects[0]
       self.disconnected[p] = tmpDisconnects[1:]
-      self.__setNextToShortest(s_x, s_y, p, s_h)
+      self.setNextToShortest(s_x, s_y, p, s_h)
 
-  def __compareDisconnectsByPos(self, prev, curr):
+  def compareDisconnectsByPos(self, prev, curr):
     """Compares if 2 disconnection (heuristic, (posX, posY)) arrays are the same.
 
     Args:
@@ -109,17 +101,17 @@ class FieldHandler():
       if p != c: return False
     return True
 
-  def __setDisconnectedUnreachable(self, p):
+  def setDisconnectedUnreachable(self, p):
     """Sets all disconnected Fields to unreachable
 
     Args:
         p (Player): Player
     """
-    for _,(x,y) in self.disconnected[p]:
+    for _, (x, y) in self.disconnected[p]:
       self.fields[x][y].setUnreachable(p)
     self.disconnected[p].clear()
 
-  def __setNextToShortest(self, x, y, p, h):
+  def setNextToShortest(self, x, y, p, h):
     """Adds Next to all the neighbours with shortest distance.
 
     Args:
@@ -128,25 +120,25 @@ class FieldHandler():
         p (Player): Player
         h (int): Heuristic of the neighbour closest to the goal
     """
-    self.setDisconnected(x, y, p, False)
+    self.fields[x][y].setDisconnected(p, False)
 
-    neighbours = self.__findVisitiableNeighbours(x, y, p)
+    neighbours = self.findVisitiableNeighbours(x, y, p)
     neighbours.sort()
     if not neighbours or neighbours[0][0] >= HEURISTICJUMP:       
-      self.__reAddToDisconnected(x, y, p, h)
+      self.reAddToDisconnected(x, y, p, h)
       return
     
     smallest_h = neighbours[0][0]
-    self.setHeurisitic(x, y, p, smallest_h)
+    self.fields[x][y].setHeuristic(p, smallest_h+1)
 
     for n in neighbours:
       n_h, (n_x, n_y), n_dir = n
       if n_h != smallest_h: break
-      self.addToNexts(x, y, p, n_dir)
-      self.addToPrevs(n_x, n_y, p, mir(n_dir))
+      self.fields[x][y].addToNexts(p, n_dir)
+      self.fields[n_x][n_y].addToPrevs(p, mir(n_dir))
 
 
-  def __findVisitiableNeighbours(self, x, y, p):
+  def findVisitiableNeighbours(self, x, y, p):
     """Finds all Neighbours from the current field that are not disconnected or in Prevs.
 
     Args:
@@ -160,22 +152,23 @@ class FieldHandler():
     neighbours = []
     for d in range(4):
       #Walll
-      if self.getWall(x, y, d): continue
-      posD = self.getDir(x, y, d)
+      if self.fields[x][y].getWall(d): continue
+      posD = self.fields[x][y].getDir(d)
       #Border
       if posD == None: continue
       d_x, d_y = posD   
       #Discnonnected
-      if self.getDisconnected(d_x, d_y, p): continue
-      prevs = self.getPrevs(x, y, p)
+      if self.fields[d_x][d_y].getDisconnected(p): continue
+      prevs = self.fields[x][y].getPrevs(p)
       #Prevs
       if d in prevs:#POT ERROR: if prevs and d in prevs
-        self.__removeNextAndAddToDisco(d_x, d_y, p, mir(d))
+        self.removeNextAndAddToDisco(d_x, d_y, p, mir(d))
         continue
-      neighbours.append((self.getHeuristic(d_x, d_y, p), (d_x, d_y), d))
+      h = self.fields[d_x][d_y].getHeuristic(p)
+      neighbours.append((h, (d_x, d_y), d))
     return neighbours
 
-  def __reAddToDisconnected(self, x, y, p, h):
+  def reAddToDisconnected(self, x, y, p, h):
     """Readds a field to be disconnected.
 
     Args:
@@ -188,25 +181,47 @@ class FieldHandler():
     self.fields[x][y].setDisconnected(p, True)
     self.disconnected[p].append((h + HEURISTICJUMP, (x, y)))
 
+    
 ##########################################################################################################################
-                                                    #FIND SHORTEST PATH FROM X/Y
+                                                      #MOVE PLAYER
 ##########################################################################################################################
-  def findPaths(self, x, y, p):
-    """Finds shortest path from position to the Goal
 
-    Args:
-        x (int): X-coordinate
-        y (int): Y-coordinate
-        p (Player): Player
+  def movePlayer(self, x, y, p, d):    
+    self.fields[x][y].setPlayer(Player.Empty)
+    new_x, new_y =  self.fields[x][y].getDir(d)
+    self.fields[new_x][new_y].setPlayer(p)
+    return new_x, new_y
 
-    Returns:
-        List: Path Tree (direction, (posX, posY), subPaths) subPaths is a recursive created Path Tree
-    """
-    nexts = self.getNexts(x, y, p)
-    path = []
-    if not nexts: return path
+    
+##########################################################################################################################
+                                                      #FIND PLAYER
+##########################################################################################################################  
+  def doPlayersReachGoal(self, p1_pos, p2_pos):
+    self.help_foundPlayer2 = False
+    self.help_foundGoalPlayer1 = False
+    self.help_foundGoalPlayer2 = False
+    self.help_checkedForPlayer = []
 
-    for d in nexts:
-      n_x, n_y = self.getDir(x, y, d)
-      path.append((d, (n_x, n_y), self.findPaths(n_x, n_y, p)))
-    return path
+    #Search Player 1
+    p1_x, p1_y = p1_pos
+    self.searchPlayerArea(p1_x, p1_y)
+    if not self.help_foundGoalPlayer1: return False
+    if self.help_foundPlayer2 and  self.help_foundGoalPlayer2: return True
+
+    self.help_foundGoalPlayer2 = False
+    p2_x, p2_y = p2_pos
+    self.searchPlayerArea(p2_x, p2_y)    
+    return self.help_foundGoalPlayer2    
+
+  def searchPlayerArea(self, x, y):
+    self.help_checkedForPlayer.append((x, y))
+    if self.fields[x][y].getPlayer() == Player.P2: self.help_foundPlayer2 = True
+    if self.fields[x][y].getHeuristic(Player.P1) == 0: self.help_foundGoalPlayer1 = True
+    if self.fields[x][y].getHeuristic(Player.P2) == 0: self.help_foundGoalPlayer2 = True
+
+    for d in [Dir.N, Dir.E, Dir.S, Dir.W]:
+      if self.fields[x][y].getWall(d): continue
+      n_pos = self.fields[x][y].getDir(d) 
+      if n_pos and n_pos not in self.help_checkedForPlayer:
+        n_x, n_y = n_pos
+        self.searchPlayerArea(n_x, n_y)

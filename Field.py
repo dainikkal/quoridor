@@ -2,7 +2,7 @@ from helper import Player, Dir, BOARDSIZE, INFINITE
 
 class Field():  
   def __init__(self, x, y):
-    """Single field of the board
+    """Single field of the board.
 
     Args:
         x (int): X-coordinate

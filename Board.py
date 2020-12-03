@@ -21,11 +21,11 @@ class Board():
                                                     #SET WALL
 ##########################################################################################################################
   def setWall(self, x, y, o):
-    """Set a Wall.
+    """Sets a wall pair and updates information.
 
     Args:
-        x (int): X-coordinate
-        y (int): Y-coordinate
+        x (int): X-coordinate of the wallpair
+        y (int): Y-coordinate of the wallpair
         o (Orientation): Orientation of the wall
     """
     self.setWallPair(x, y, o)
@@ -35,11 +35,11 @@ class Board():
 
 
   def setWallPair(self, x, y, o):
-    """Sets a pair wallspieces. 
+    """Sets a wallpair.
 
     Args:
-        x (int): X-coordinate
-        y (int): Y-coordinate
+        x (int): X-coordinate of the wallpair
+        y (int): Y-coordinate of the wallpair
         o (Orientation): Orientation of the wall
     """
     if o == Orientation.H: 
@@ -66,7 +66,7 @@ class Board():
     if x != BOARDSIZE: self.wh.incrConnectorCount(x, y)
 
   def setVerticalWall(self, x, y):
-    """Set a vertical wall.
+    """Sets a vertical wall.
 
     Args:
         x (int): X-Coordinate
@@ -103,13 +103,13 @@ class Board():
   def updatePlayerPaths(self):
     """Updates the paths of each player."""
     self.wh.initWallOnPath()
-    for p in range(2):
+    for p in [Player.P1, Player.P2]:
       x, y = self.ph.getPos(p)
       p_path = self.findPaths(x, y, p)
       self.ph.setPath(p, p_path)
 
   def findPaths(self, x, y, p):
-    """Finds Path from starting field position to Goal.
+    """Recursivly finds path from player to goal.
 
     Args:
         x (int): X-coordinate Start
@@ -146,49 +146,77 @@ class Board():
       print(s)
 
 ##########################################################################################################################
-                                                      #TO SORT
+                                                      #CHECK SETABLE WALLS
 ##########################################################################################################################
   def getAllSetableWalls(self):
+    """Generate List of pairs with wallpairs that are setable.
+
+    Returns:
+        List: List of pairs(x-Coordinate, y-coordinate, orientation)
+    """
     return [(x, y, o) for x in range(BOARDSIZE) for y in range(BOARDSIZE) for o in [Orientation.H, Orientation.V] if self.isWallSetable(x, y, o)]
 
   def isWallSetable(self, x, y, o):
+    """Checks if a wallpair is setable.
+
+    Args:
+        x (int): X-coordinate of the wallpair
+        y (int): Y-coordinate of the wallpair
+        o (Orientation): Orientation of the wallpair
+
+    Returns:
+        bool: True is wallpair is setable, False if not
+    """
     midCon_count =  self.wh.getConnectorCount(x, y)
+
     #already locked connector
     if midCon_count > 1: return False
     
-    (w1_x, w1_y), (w2_x, w2_y) = self.wh.getWallPair(x, y, o)    
     #If midconnector has 1 wall that is not on that orientation
+    (w1_x, w1_y), (w2_x, w2_y) = self.wh.getWallPair(x, y, o)    
     if midCon_count == 1 and (self.wh.isWallSet(w1_x, w1_y, o) or self.wh.isWallSet(w2_x, w2_y, o)): return False
 
-    if o == Orientation.H:
-      con1_pos = self.wh.getConnectorNeighbour(x, y, Dir.W)
-      con2_pos = self.wh.getConnectorNeighbour(x, y, Dir.E)
-    else:
-      con1_pos = self.wh.getConnectorNeighbour(x, y, Dir.N)
-      con2_pos = self.wh.getConnectorNeighbour(x, y, Dir.S)
-    
-    con1_x, con1_y = con1_pos if con1_pos else [0, 0]
-    con2_x, con2_y = con2_pos if con2_pos else [0, 0]
-    con1_count = self.wh.getConnectorCount(con1_x, con1_y) if con1_pos else 3
-    con2_count = self.wh.getConnectorCount(con2_x, con2_y) if con2_pos else 3
-    
-    #only 0 or 1 Connector is connected to something
-    if [con1_count, midCon_count, con2_count].count(0) in [2,3]: return True
+    #if there are 2 or more loose connectors 
+    if self.wh.countLooseConnectorsInWallPair(x, y, o) in [2,3]: return True
 
-    self.temporarySetWallInField(x, y, o, True)
-    p1_pos = self.ph.getPos(Player.P1)
-    p2_pos = self.ph.getPos(Player.P2)
-    playersReachGoal = self.fh.doPlayersReachGoal(p1_pos, p2_pos)
-    self.temporarySetWallInField(x, y, o, False)
+    #if players have a way to reach the goal even if the walls were set
+    return self.findGoalReachability(x, y, o)
+  
+  def findGoalReachability(self,x, y, o):
+    """find if all players are able to reach their goals if a wallpair would be set. 
 
-    return playersReachGoal
+    Args:
+        x (int): X-coordinate of the temporary wallpair
+        y (int): Y-coordinate of the temporary wallpair
+        o (Orientation): Orientation of the temporary wallpair
 
-  def temporarySetWallInField(self, x, y, o, val):
-    dirs = []
+    Returns:
+        bool: True if all players reach goal, False if atleast one player does not reach the goal
+    """
+    self.setWallPairInField(x, y, o, True)
+
+    returnValue = True
+    for p in [Player.P1, Player.P2]:
+      p_x, p_y = self.ph.getPos(p)
+      self.fh.help_checkedForPlayer = []
+      returnValue &= self.fh.doesPlayerReachGoal(p_x, p_y, p)
+
+    self.setWallPairInField(x, y, o, False)
+    return returnValue   
+
+  def setWallPairInField(self, x, y, o, val):
+    """Sets the wall value in fields for a wallpair.
+
+    Args:
+        x (int): X-coordinate
+        y (int): Y-coordinate
+        o (Orientation): Orientation of the wall
+        val (bool): State of the wall to be set
+    """
     if Orientation.H == o:
       dirs = [(Dir.N, Dir.E, Dir.S), (Dir.N, Dir.W, Dir.S), (Dir.S, Dir.E, Dir.N), (Dir.S, Dir.W, Dir.N)]
-    if Orientation.V == o: 
+    else: #if Orientation.V == o: 
       dirs = [(Dir.E, Dir.N, Dir.W), (Dir.E, Dir.S, Dir.W), (Dir.W, Dir.N, Dir.E), (Dir.W, Dir.S, Dir.E)]
-    for d1, d2, d3 in dirs:
+    for d1, d2, d_passthrough in dirs:
       f_x, f_y = self.wh.getConnectorField(x, y, d1, d2)
-      self.fh.setWall(f_x, f_y, d3, val)
+      self.fh.setWall(f_x, f_y, d_passthrough, val)

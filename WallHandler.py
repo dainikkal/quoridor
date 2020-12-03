@@ -25,6 +25,32 @@ class WallHandler():
 
   def getConnectorNeighbour(self, x, y, d): return self.connectors[x][y].Neighbours[d]
 
+  def countLooseConnectorsInWallPair(self, x, y, o):
+    """Count how many loose connector a wallpair has.
+
+    Args:
+        x (int): X-coordinate of wallpair
+        y (int): Y-coordiante of wallpair
+        o (Orientation): Orientation of wallpair
+
+    Returns:
+        int: count of loose connectors
+    """
+    midCon_count =  self.connectors[x][y].getCount()
+    if o == Orientation.H:
+      con1_pos = self.connectors[x][y].Neighbours[Dir.W]
+      con2_pos = self.connectors[x][y].Neighbours[Dir.E]
+    else:
+      con1_pos = self.connectors[x][y].Neighbours[Dir.N]
+      con2_pos = self.connectors[x][y].Neighbours[Dir.S]
+    
+    con1_x, con1_y = con1_pos if con1_pos else [0, 0]
+    con2_x, con2_y = con2_pos if con2_pos else [0, 0]
+    con1_count = self.connectors[con1_x][con1_y].getCount() if con1_pos else 3
+    con2_count = self.connectors[con2_x][con2_y].getCount() if con2_pos else 3
+
+    return [con1_count, midCon_count, con2_count].count(0)
+
   def setWall(self, x, y, o):
     """Updates the wall.
 
@@ -50,22 +76,8 @@ class WallHandler():
     if o == Orientation.H: return self.horizontal[x][y].isWallSet()
     if o == Orientation.V: return self.vertical[x][y].isWallSet()
 
-  def doesWallTouchBorder(self, x, y, o):
-    """Returns if wall touches game Border
-
-    Args:
-        x (int): X-coordinate
-        y (int): Y-coordinate
-        o (Orientation): Orientation of the wall
-
-    Returns:
-        Bool: True if yes, False if no
-    """
-    if o == Orientation.H: return self.horizontal[x][y].doesWalltouchBorder()
-    if o == Orientation.V: return self.vertical[x][y].doesWalltouchBorder()
-
   def getWallPair(self, x, y, o):
-    """Get wall positions based on connector position  
+    """Get wall positions based on connector position.
 
     Args:
         x (int): X-coordinate

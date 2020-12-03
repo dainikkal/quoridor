@@ -10,9 +10,6 @@ class FieldHandler():
     self.disconnected = [[], []]
 
     self.help_checkedForPlayer = []
-    self.help_foundPlayer2 = False
-    self.help_foundGoalPlayer1 = False
-    self.help_foundGoalPlayer2 = False
 
   def getWall(self, x, y, d): return self.fields[x][y].getWall(d)
   def setWall(self, x, y, d, val=True): self.fields[x][y].setWall(d, val)
@@ -37,7 +34,7 @@ class FieldHandler():
     self.fields[x][y].setWall(d)
 
   def removeNextAndAddToDisco(self, x, y, p, d):
-    """Removes Nexts and according Prevs and disconnects field 
+    """Removes Nexts and according Prevs and disconnects field.
 
     Args:
         x (int): X-coordinate
@@ -58,7 +55,7 @@ class FieldHandler():
                                                     #RECONNECT Disconnected Fields
 ##########################################################################################################################
   def reconnectDisconnectedFields(self, p):
-    """Reconnects disconnected fields and updates next
+    """Reconnects disconnected fields and updates next.
 
     Args:
         p (Player): Player
@@ -102,7 +99,7 @@ class FieldHandler():
     return True
 
   def setDisconnectedUnreachable(self, p):
-    """Sets all disconnected Fields to unreachable
+    """Sets all disconnected Fields to unreachable.
 
     Args:
         p (Player): Player
@@ -169,7 +166,7 @@ class FieldHandler():
     return neighbours
 
   def reAddToDisconnected(self, x, y, p, h):
-    """Readds a field to be disconnected.
+    """Reads a field to be disconnected.
 
     Args:
         x (int): X-coordinate
@@ -186,7 +183,7 @@ class FieldHandler():
                                                       #MOVE PLAYER
 ##########################################################################################################################
 
-  def movePlayer(self, x, y, p, d):    
+  def movePlayer(self, x, y, p, d):#TODO JUMP OVER PLAYER
     self.fields[x][y].setPlayer(Player.Empty)
     new_x, new_y =  self.fields[x][y].getDir(d)
     self.fields[new_x][new_y].setPlayer(p)
@@ -196,32 +193,25 @@ class FieldHandler():
 ##########################################################################################################################
                                                       #FIND PLAYER
 ##########################################################################################################################  
-  def doPlayersReachGoal(self, p1_pos, p2_pos):
-    self.help_foundPlayer2 = False
-    self.help_foundGoalPlayer1 = False
-    self.help_foundGoalPlayer2 = False
-    self.help_checkedForPlayer = []
+  def doesPlayerReachGoal(self, x, y, p):
+    """Recursivly checks if a player is able to reach their goal.
 
-    #Search Player 1
-    p1_x, p1_y = p1_pos
-    self.searchPlayerArea(p1_x, p1_y)
-    if not self.help_foundGoalPlayer1: return False
-    if self.help_foundPlayer2 and  self.help_foundGoalPlayer2: return True
+    Args:
+        x (int): x-coordinate of current field
+        y (int): y-coordiante of current field
+        p (Player): Player to be checked
 
-    self.help_foundGoalPlayer2 = False
-    p2_x, p2_y = p2_pos
-    self.searchPlayerArea(p2_x, p2_y)    
-    return self.help_foundGoalPlayer2    
-
-  def searchPlayerArea(self, x, y):
+    Returns:
+        bool: True if player is able to reach the goal, False if not
+    """
     self.help_checkedForPlayer.append((x, y))
-    if self.fields[x][y].getPlayer() == Player.P2: self.help_foundPlayer2 = True
-    if self.fields[x][y].getHeuristic(Player.P1) == 0: self.help_foundGoalPlayer1 = True
-    if self.fields[x][y].getHeuristic(Player.P2) == 0: self.help_foundGoalPlayer2 = True
+    if self.fields[x][y].getHeuristic(p) == 0: return True
 
     for d in [Dir.N, Dir.E, Dir.S, Dir.W]:
       if self.fields[x][y].getWall(d): continue
       n_pos = self.fields[x][y].getDir(d) 
       if n_pos and n_pos not in self.help_checkedForPlayer:
         n_x, n_y = n_pos
-        self.searchPlayerArea(n_x, n_y)
+        if self.doesPlayerReachGoal(n_x, n_y, p): return True
+
+    return False

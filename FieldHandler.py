@@ -17,6 +17,7 @@ class FieldHandler():
   def getNexts(self, x, y, p): return self.fields[x][y].getNexts(p)
   def getDir(self, x, y, d): return self.fields[x][y].getDir(d)
   def getWallDir(self, x, y, d): return self.fields[x][y].getWallDir(d)
+  def getHeuristic(self, x, y, p): return self.fields[x][y].getHeuristic(p)
 
 ##########################################################################################################################
                                                     #SET WALL
@@ -182,10 +183,25 @@ class FieldHandler():
 ##########################################################################################################################
                                                       #MOVE PLAYER
 ##########################################################################################################################
+  def movePlayer(self, x, y, p, d, d2 = Dir.NoDir):#TODO JUMP OVER PLAYER
+    """Move player.
 
-  def movePlayer(self, x, y, p, d):#TODO JUMP OVER PLAYER
-    self.fields[x][y].setPlayer(Player.Empty)
+    Args:
+        x (int): X-Coordinate of the player
+        y (int): Y-Coordinate of the player
+        p (Player): Player
+        d (Direction): Direction to Move
+        d2 (Direction, optional): Direction to Move in Case of a Jump. Defaults to Dir.NoDir.
+
+    Returns:
+        int, int: new coordinates of the player
+    """
     new_x, new_y =  self.fields[x][y].getDir(d)
+    #check if position is a jump over player
+    if self.fields[new_x][new_y].getPlayer() != Player.Empty:
+      new_x, new_y =  self.fields[new_x][new_y].getDir(d2)
+      pass
+    self.fields[x][y].setPlayer(Player.Empty)
     self.fields[new_x][new_y].setPlayer(p)
     return new_x, new_y
 

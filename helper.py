@@ -4,6 +4,7 @@ class Player():
   P2 = 1
 
 class Dir():
+  NoDir = -1
   N = 0
   E = 1
   S = 2

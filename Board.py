@@ -83,19 +83,61 @@ class Board():
 ##########################################################################################################################
                                                       #MOVE PLAYER
 ##########################################################################################################################
-  def movePlayer(self, p, d):
+  def movePlayer(self, p, d, d2 = Dir.NoDir):
     """Move player to direction.
 
     Args:
         p (Player): Player
         d (Dir): Direction
+        d2 (Dir, optional): Direction after Jump. Defaults to Dir.NoDir.
     """
     #Assumption viable direction
     x, y = self.ph.getPos(p)
-    new_x, new_y = self.fh.movePlayer(x, y, p, d)
+    new_x, new_y = self.fh.movePlayer(x, y, p, d, d2)
     self.ph.setPos(p, new_x, new_y)
 
     self.updatePlayerPaths()
+  
+  def getPlayerMoves(self, p):
+    """Get all possible moves of a player.
+
+    Args:
+        p (Player): Playeer
+
+    Returns:
+        List: List of tuple(Direction, direction in case of a jump, heuristic of new place)
+    """
+    x, y = self.ph.getPos(p)
+    d = []
+    for dir in [Dir.N, Dir.E, Dir.S, Dir.W]:
+      if self.fh.getWall(x, y, dir): continue
+
+      jump_pos = self.fh.getDir(x, y, dir)
+      if not jump_pos: continue
+      jump_x, jump_y = jump_pos
+
+      if self.fh.getPlayer(jump_x, jump_y) == Player.Empty:
+        h = self.fh.getHeuristic(jump_x, jump_y, p)
+        d.append((dir, Dir.NoDir, h))
+
+      else: #Jump over Player
+        #Side Jump
+        if self.fh.getWall(jump_x, jump_y, dir) or not self.fh.getDir(jump_x, jump_y, dir):
+          for dir2 in [Dir.N, Dir.E, Dir.S, Dir.W]:
+            if dir2 == dir or dir2 == mir(dir):continue
+            if self.fh.getWall(jump_x, jump_y, dir2): continue
+
+            new_x, new_y = self.fh.getDir(jump_x, jump_y, dir2)
+            h = self.fh.getHeuristic(new_x, new_y, p)
+            d.append((dir, dir2, h))
+        else: #Straight Jump
+          overjumped_pos= self.fh.getDir(jump_x, jump_y, dir)
+          if not overjumped_pos: continue
+          overjumped_x, overjumped_y = overjumped_pos
+          h = self.fh.getHeuristic(overjumped_x, overjumped_y, p)
+          d.append((dir, dir, h))
+    return d
+
 
 ##########################################################################################################################
                                                     #PLAYER PATH STUFF #MAYBE UNNECESSARYgetPath

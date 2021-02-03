@@ -1,9 +1,11 @@
+from Playerstate import Playerstate
 from typing import List
 from Path import Path
 from PlayerHandler import PlayerHandler
-from helper import BOARDSIZE, CycledetectionRetVal, Dir, Orientation, Player, mir
+from helper import BOARDSIZE, CycledetectionRetVal, Dir, INFINITE, MINUSINFINITE, Orientation, Player, mir
 from FieldHandler import FieldHandler
 from WallHandler import WallHandler
+import copy
 
 class Board():
   def __init__(self):
@@ -12,10 +14,6 @@ class Board():
     self.fh = FieldHandler()
     self.ph = PlayerHandler()
     self.updatePlayerPaths()
-    #helper variables 
-    self.checkedCon = []
-    self.currentBorderConnector = []
-    self.cycleGoal = []
 
 #######################################################################################################################
                                                     #SET WALL
@@ -97,47 +95,53 @@ class Board():
     self.ph.setPos(p, new_x, new_y)
 
     self.updatePlayerPaths()
-  
-  def getPlayerMoves(self, p):
+
+  def getPlayerMoves(self, state):
     """Get all possible moves of a player.
 
     Args:
-        p (Player): Playeer
+        state (Playerstate): currentPlayerstate
 
     Returns:
-        List: List of tuple(Direction, direction in case of a jump, heuristic of new place)
+        List: List of tuple(Direction, direction in case of a jump, heuristic of new place, state after the move)
     """
-    x, y = self.ph.getPos(p)
-    d = []
-    for dir in [Dir.N, Dir.E, Dir.S, Dir.W]:
-      if self.fh.getWall(x, y, dir): continue
+    p = state.p_current
+    x , y = state.p1_pos if p == Player.P1 else state.p2_pos
+    other_pos = state.p2_pos if p == Player.P1 else state.p1_pos
 
-      jump_pos = self.fh.getDir(x, y, dir)
-      if not jump_pos: continue
-      jump_x, jump_y = jump_pos
+    moves = []
+    for d in [Dir.N, Dir.E, Dir.S, Dir.W]:
+      if self.fh.getWall(x, y, d): continue
 
-      if self.fh.getPlayer(jump_x, jump_y) == Player.Empty:
-        h = self.fh.getHeuristic(jump_x, jump_y, p)
-        d.append((dir, Dir.NoDir, h))
+      pos_moved = self.fh.getDir(x, y, d)
+      if not pos_moved: continue
 
+      x_moved, y_moved = pos_moved
+
+
+      if pos_moved != other_pos:
+        moves.append(self.zipMove(pos_moved, p, state, d, Dir.NoDir))
+        
       else: #Jump over Player
-        #Side Jump
-        if self.fh.getWall(jump_x, jump_y, dir) or not self.fh.getDir(jump_x, jump_y, dir):
-          for dir2 in [Dir.N, Dir.E, Dir.S, Dir.W]:
-            if dir2 == dir or dir2 == mir(dir):continue
-            if self.fh.getWall(jump_x, jump_y, dir2): continue
+        if self.fh.getWall(x_moved, y_moved, d) or not self.fh.getDir(x_moved, y_moved, d): #Side Jump
+          for d2 in [Dir.N, Dir.E, Dir.S, Dir.W]:
+            if d2 in [d, mir(d)]: continue
+            if self.fh.getWall(x_moved, y_moved, d2): continue
 
-            new_x, new_y = self.fh.getDir(jump_x, jump_y, dir2)
-            h = self.fh.getHeuristic(new_x, new_y, p)
-            d.append((dir, dir2, h))
+            new_pos = self.fh.getDir(x_moved, y_moved, d2)
+            if not new_pos:continue
+
+            moves.append(self.zipMove(new_pos, p, state, d, d2))
         else: #Straight Jump
-          overjumped_pos= self.fh.getDir(jump_x, jump_y, dir)
-          if not overjumped_pos: continue
-          overjumped_x, overjumped_y = overjumped_pos
-          h = self.fh.getHeuristic(overjumped_x, overjumped_y, p)
-          d.append((dir, dir, h))
-    return d
+          pos_jump = self.fh.getDir(x_moved, y_moved, d)
+          moves.append(self.zipMove(pos_jump, p, state, d, d))
+    return moves
 
+  def zipMove(self, pos, p, state, d, d2):    
+    x, y = pos
+    h = self.fh.getHeuristic(x, y, p)
+    new_state = Playerstate.newPlayerstate(state, pos, h, p)
+    return (d, d2, h, new_state)
 
 ##########################################################################################################################
                                                     #PLAYER PATH STUFF #MAYBE UNNECESSARYgetPath
@@ -188,7 +192,7 @@ class Board():
       print(s)
 
 ##########################################################################################################################
-                                                      #CHECK SETABLE WALLS
+                                                #CHECK SETABLE WALLS
 ##########################################################################################################################
   def getAllSetableWalls(self):
     """Generate List of pairs with wallpairs that are setable.
@@ -262,3 +266,52 @@ class Board():
     for d1, d2, d_passthrough in dirs:
       f_x, f_y = self.wh.getConnectorField(x, y, d1, d2)
       self.fh.setWall(f_x, f_y, d_passthrough, val)
+
+
+
+    
+
+
+##########################################################################################################################
+                                                          #TO SORT
+##########################################################################################################################
+
+  def evalPos(self, p1_pos, p2_pos):
+    pass
+
+  def isGameOver(self, state):
+    if state.h_p1 == 0: return Player.P1
+    if state.h_p2 == 0: return Player.P2
+    return Player.Empty
+
+  def minmax(self, state, depth, alpha, beta, maxMe):
+    if depth == 100 or self.isGameOver(state) != Player.Empty:
+      return state.h_p2 - state.h_p1, depth
+    
+
+    moves = self.getPlayerMoves(state)
+    moves.sort(key=lambda x:x[2])
+    
+
+    if maxMe:
+      maxEval = MINUSINFINITE
+
+      for m in moves:
+        eval, new_depth = self.minmax(m[3], depth +1, alpha, beta, False)
+        if new_depth + 1 < depth:
+          depth = new_depth + 1
+        maxEval = max(maxEval, eval)
+        alpha = max(alpha, eval)
+        if beta <= alpha: break
+      return maxEval, depth
+    else:
+      minEval = INFINITE
+
+      for m in moves:
+        eval, new_depth = self.minmax(m[3], depth + 1, alpha, beta, True)
+        if new_depth+1 < depth:
+          depth = new_depth + 1
+        minEval = min(minEval, eval)
+        beta = min(beta, eval)
+        if beta <= alpha: break
+      return minEval, depth

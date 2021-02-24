@@ -10,39 +10,32 @@ class Game():
     self.b = Board()
     self.currentPlayer = Player.P1
     self.classes = {} #refactor into "b" to increase performence
-    self.tasks = {} #refactor into "b" to increase performence
     self.links = {} #refactor into "b" to increase performence
-    self.update_state()
-    self.init_classes()
+    self.tasks = {} #refactor into "b" to increase performence
+    self.update_classes()
 
-  def update_state(self):      
-    pos_p1 = self.b.ph.getPos(Player.P1)
-    pos_p2 = self.b.ph.getPos(Player.P2)
-    h_p1 = self.b.fh.getHeuristic(pos_p1[0], pos_p1[1], Player.P1)
-    h_p2 = self.b.fh.getHeuristic(pos_p2[0], pos_p2[1], Player.P2)
-    self.state = Playerstate(pos_p1, pos_p2, self.currentPlayer, h_p1, h_p2)
+  def turn(self):
+    #check win
+    self.currentPlayer = Player.P2 if self.currentPlayer == Player.P1 else Player.P1
 
   def execute_action(self, action_code):
     if action_code not in self.tasks.keys(): return
     action, params = self.tasks[action_code]
     action(*params)
 
-  def add_tasks(self):
-    moves = self.b.getPlayerMoves(self.state)
-
-
-  def move_player(self, d, d2=Dir.NoDir):
-    self.b.movePlayer(self.currentPlayer, d, d2)
-    
     self.turn()
     self.update_classes()
 
-  def set_wall(self, x, y, o):
-    self.b.setWall(x, y, o)
+  def move_player(self, d, d2=Dir.NoDir): self.b.movePlayer(self.currentPlayer, d, d2)
+  def set_wall(self, x, y, o): self.b.setWall(x, y, o)
 
-    self.turn()
-    self.update_classes()
-
+  def update_classes(self):
+    self.tasks.clear()
+    for i in range(17*17): self.links[i] = ""
+    self.add_fields_to_classes()
+    self.add_wallcenters_to_classes()
+    self.add_horizontal_walls_to_classes()
+    self.add_vertical_walls_to_classes()
 
   def add_wallcenters_to_classes(self):
     for y in range(0, 8):
@@ -52,7 +45,7 @@ class Game():
         val += " V" + str(x) + "-" + str(y)
         val += " H" + str(x) + "-" + str(y)
 
-        val += " set" if self.b.wh.isConnectorSet(x, y) else " open"
+        val += " set" if self.b.wh.isCenterSet(x, y) else " open"
 
         self.classes[(y*2+1)*17 + x*2+1] = val
   
@@ -101,7 +94,10 @@ class Game():
     self.classes[pos_p1[0]*2 + 17*2*pos_p1[1]] += " P1"
     self.classes[pos_p2[0]*2 + 17*2*pos_p2[1]] += " P2"
 
-    moves = self.b.getPlayerMoves(self.state)
+    h_p1 = self.b.fh.getHeuristic(pos_p1[0], pos_p1[1], Player.P1)
+    h_p2 = self.b.fh.getHeuristic(pos_p2[0], pos_p2[1], Player.P2)
+    state = Playerstate(pos_p1, pos_p2, self.currentPlayer, h_p1, h_p2)
+    moves = self.b.getPlayerMoves(state)
     x, y = self.b.ph.getPos(self.currentPlayer)
     for m in moves:
       pos_relative = x*2 + 17*2*y
@@ -121,21 +117,6 @@ class Game():
       self.links[pos_relative] = move_code
       self.tasks[move_code] = [self.move_player, [m[0], m[1]]]
 
-  def init_classes(self):
-    self.update_classes()
-
-  def update_classes(self):
-    self.tasks.clear()
-    for i in range(17*17): self.links[i] = ""
-    self.add_fields_to_classes()
-    self.add_wallcenters_to_classes()
-    self.add_horizontal_walls_to_classes()
-    self.add_vertical_walls_to_classes()
-
   def get_classes(self): return [self.classes[i] for i in range(17*17)]
   def get_links(self): return [self.links[i] for i in range(17*17)]
 
-
-  def turn(self):
-    self.currentPlayer = Player.P2 if self.currentPlayer == Player.P1 else Player.P1
-    self.update_state()

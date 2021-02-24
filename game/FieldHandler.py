@@ -4,20 +4,18 @@ from game.helper import BOARDSIZE, BOARDSIZEMID, Dir, HEURISTICJUMP, Player, mir
 
 class FieldHandler():
   def __init__(self):
-    self.fields = [[Field(x, y) for y in range(BOARDSIZE+1)] for x in range(BOARDSIZE+1)]    
-    self.fields[BOARDSIZEMID][BOARDSIZE].setPlayer(Player.P1)
-    self.fields[BOARDSIZEMID][0].setPlayer(Player.P2)    
+    self.fields = {(x, y) : Field(x, y) for x in range(BOARDSIZE+1) for y in range(BOARDSIZE+1)}
+    self.fields[(BOARDSIZEMID, BOARDSIZE)].setPlayer(Player.P1)
+    self.fields[(BOARDSIZEMID, 0)].setPlayer(Player.P2)    
     self.disconnected = [[], []]
 
     self.help_checkedForPlayer = []
 
-  def getWall(self, x, y, d): return self.fields[x][y].getWall(d)
-  def setWall(self, x, y, d, val=True): self.fields[x][y].setWall(d, val)
-  def getPlayer(self, x, y): return self.fields[x][y].getPlayer()
-  def getNexts(self, x, y, p): return self.fields[x][y].getNexts(p)
-  def getDir(self, x, y, d): return self.fields[x][y].getDir(d)
-  def getWallDir(self, x, y, d): return self.fields[x][y].getWallDir(d)
-  def getHeuristic(self, x, y, p): return self.fields[x][y].getHeuristic(p)
+  def getWall(self, x, y, d): return self.fields[(x, y)].getWall(d)
+  def setWall(self, x, y, d, val=True): self.fields[(x, y)].setWall(d, val)
+  def getNexts(self, x, y, p): return self.fields[(x, y)].getNexts(p)
+  def getDir(self, x, y, d): return self.fields[(x, y)].getDir(d)
+  def getHeuristic(self, x, y, p): return self.fields[(x, y)].getHeuristic(p)
 
 ##########################################################################################################################
                                                     #SET WALL
@@ -32,7 +30,7 @@ class FieldHandler():
     """
     self.removeNextAndAddToDisco(x, y, Player.P1, d)
     self.removeNextAndAddToDisco(x, y, Player.P2, d)
-    self.fields[x][y].setWall(d)
+    self.fields[(x, y)].setWall(d)
 
   def removeNextAndAddToDisco(self, x, y, p, d):
     """Removes Nexts and according Prevs and disconnects field.
@@ -43,13 +41,13 @@ class FieldHandler():
         p (Player): Player
         d (Dir): Direction
     """
-    if d in self.fields[x][y].getNexts(p):
-      self.fields[x][y].removeFromNexts(p, d)
-      d_x, d_y = self.fields[x][y].getDir(d)
-      self.fields[d_x][d_y].removeFromPrevs(p, mir(d))
-      if not self.fields[x][y].getNexts(p):
-        self.fields[x][y].setDisconnected(p, True)
-        h = self.fields[x][y].getHeuristic(p)
+    if d in self.fields[(x, y)].getNexts(p):
+      self.fields[(x, y)].removeFromNexts(p, d)
+      d_x, d_y = self.fields[(x, y)].getDir(d)
+      self.fields[(d_x, d_y)].removeFromPrevs(p, mir(d))
+      if not self.fields[(x, y)].getNexts(p):
+        self.fields[(x, y)].setDisconnected(p, True)
+        h = self.fields[(x, y)].getHeuristic(p)
         self.disconnected[p].append((h, (x, y)))
 
 ##########################################################################################################################
@@ -105,8 +103,8 @@ class FieldHandler():
     Args:
         p (Player): Player
     """
-    for _, (x, y) in self.disconnected[p]:
-      self.fields[x][y].setUnreachable(p)
+    for _, pos in self.disconnected[p]:
+      self.fields[pos].setUnreachable(p)
     self.disconnected[p].clear()
 
   def setNextToShortest(self, x, y, p, h):
@@ -118,7 +116,7 @@ class FieldHandler():
         p (Player): Player
         h (int): Heuristic of the neighbour closest to the goal
     """
-    self.fields[x][y].setDisconnected(p, False)
+    self.fields[(x, y)].setDisconnected(p, False)
 
     neighbours = self.findVisitiableNeighbours(x, y, p)
     neighbours.sort()
@@ -127,13 +125,13 @@ class FieldHandler():
       return
     
     smallest_h = neighbours[0][0]
-    self.fields[x][y].setHeuristic(p, smallest_h+1)
+    self.fields[(x, y)].setHeuristic(p, smallest_h+1)
 
     for n in neighbours:
-      n_h, (n_x, n_y), n_dir = n
+      n_h, n_pos, n_dir = n
       if n_h != smallest_h: break
-      self.fields[x][y].addToNexts(p, n_dir)
-      self.fields[n_x][n_y].addToPrevs(p, mir(n_dir))
+      self.fields[(x, y)].addToNexts(p, n_dir)
+      self.fields[n_pos].addToPrevs(p, mir(n_dir))
 
 
   def findVisitiableNeighbours(self, x, y, p):
@@ -150,20 +148,20 @@ class FieldHandler():
     neighbours = []
     for d in range(4):
       #Walll
-      if self.fields[x][y].getWall(d): continue
-      posD = self.fields[x][y].getDir(d)
+      if self.fields[(x, y)].getWall(d): continue
+      posD = self.fields[(x, y)].getDir(d)
       #Border
       if posD == None: continue
-      d_x, d_y = posD   
       #Discnonnected
-      if self.fields[d_x][d_y].getDisconnected(p): continue
-      prevs = self.fields[x][y].getPrevs(p)
+      if self.fields[posD].getDisconnected(p): continue
+      prevs = self.fields[(x, y)].getPrevs(p)
       #Prevs
       if d in prevs:#POT ERROR: if prevs and d in prevs
+        d_x, d_y = posD   
         self.removeNextAndAddToDisco(d_x, d_y, p, mir(d))
         continue
-      h = self.fields[d_x][d_y].getHeuristic(p)
-      neighbours.append((h, (d_x, d_y), d))
+      h = self.fields[posD].getHeuristic(p)
+      neighbours.append((h, posD, d))
     return neighbours
 
   def reAddToDisconnected(self, x, y, p, h):
@@ -175,15 +173,15 @@ class FieldHandler():
         p (Player): Player
         h (heuristic): old heuristic the player  had
     """
-    self.fields[x][y].setHeuristic(p, h + HEURISTICJUMP)
-    self.fields[x][y].setDisconnected(p, True)
+    self.fields[(x, y)].setHeuristic(p, h + HEURISTICJUMP)
+    self.fields[(x, y)].setDisconnected(p, True)
     self.disconnected[p].append((h + HEURISTICJUMP, (x, y)))
 
     
 ##########################################################################################################################
                                                       #MOVE PLAYER
 ##########################################################################################################################
-  def movePlayer(self, x, y, p, d, d2 = Dir.NoDir):#TODO JUMP OVER PLAYER
+  def movePlayer(self, x, y, p, d, d2 = Dir.NoDir):
     """Move player.
 
     Args:
@@ -196,14 +194,14 @@ class FieldHandler():
     Returns:
         int, int: new coordinates of the player
     """
-    new_x, new_y =  self.fields[x][y].getDir(d)
+    new_pos =  self.fields[(x, y)].getDir(d)
     #check if position is a jump over player
-    if self.fields[new_x][new_y].getPlayer() != Player.Empty:
-      new_x, new_y =  self.fields[new_x][new_y].getDir(d2)
-      pass
-    self.fields[x][y].setPlayer(Player.Empty)
-    self.fields[new_x][new_y].setPlayer(p)
-    return new_x, new_y
+    if self.fields[new_pos].getPlayer() != Player.Empty:
+      new_pos =  self.fields[new_pos].getDir(d2)
+      
+    self.fields[(x, y)].setPlayer(Player.Empty)
+    self.fields[new_pos].setPlayer(p)
+    return new_pos
 
     
 ##########################################################################################################################
@@ -221,11 +219,11 @@ class FieldHandler():
         bool: True if player is able to reach the goal, False if not
     """
     self.help_checkedForPlayer.append((x, y))
-    if self.fields[x][y].getHeuristic(p) == 0: return True
+    if self.fields[(x, y)].getHeuristic(p) == 0: return True
 
     for d in [Dir.N, Dir.E, Dir.S, Dir.W]:
-      if self.fields[x][y].getWall(d): continue
-      n_pos = self.fields[x][y].getDir(d) 
+      if self.fields[(x, y)].getWall(d): continue
+      n_pos = self.fields[(x, y)].getDir(d) 
       if n_pos and n_pos not in self.help_checkedForPlayer:
         n_x, n_y = n_pos
         if self.doesPlayerReachGoal(n_x, n_y, p): return True

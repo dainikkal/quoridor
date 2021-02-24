@@ -8,8 +8,8 @@ class Playerstate():
     self.h_p1 = h_p1 if h_p1 != None else oldstate.h_p1
     self.h_p2 = h_p2 if h_p2 != None else oldstate.h_p2
 
-  def newPlayerstate(state, new_pos, new_h, p):
-    if p == Player.P1:
+  def newPlayerstate(state, new_pos, new_h):
+    if state.p_current == Player.P1:
       return Playerstate(new_pos, None, Player.P2, new_h, None, state)
     return Playerstate(None, new_pos, Player.P1, None, new_h, state)
 

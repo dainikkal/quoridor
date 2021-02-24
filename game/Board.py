@@ -58,8 +58,8 @@ class Board():
     self.fh.removeNextAndSetWall(x, y, Dir.S)
     self.fh.removeNextAndSetWall(x, y+1, Dir.N)
     
-    if x != 0: self.wh.incrConnectorCount(x-1, y)
-    if x != BOARDSIZE: self.wh.incrConnectorCount(x, y)
+    if x != 0: self.wh.incrWallcenterCount(x-1, y)
+    if x != BOARDSIZE: self.wh.incrWallcenterCount(x, y)
 
   def setVerticalWall(self, x, y):
     """Sets a vertical wall.
@@ -73,8 +73,8 @@ class Board():
     self.fh.removeNextAndSetWall(x, y, Dir.E)
     self.fh.removeNextAndSetWall(x+1, y, Dir.W)
 
-    if y != 0: self.wh.incrConnectorCount(x, y-1)
-    if y != BOARDSIZE: self.wh.incrConnectorCount(x, y)
+    if y != 0: self.wh.incrWallcenterCount(x, y-1)
+    if y != BOARDSIZE: self.wh.incrWallcenterCount(x, y)
 
 ##########################################################################################################################
                                                       #MOVE PLAYER
@@ -138,7 +138,7 @@ class Board():
   def zipMove(self, pos, p, state, d, d2):    
     x, y = pos
     h = self.fh.getHeuristic(x, y, p)
-    new_state = Playerstate.newPlayerstate(state, pos, h, p)
+    new_state = Playerstate.newPlayerstate(state, pos, h)
     return (d, d2, h, new_state)
 
 ##########################################################################################################################
@@ -211,17 +211,17 @@ class Board():
     Returns:
         bool: True is wallpair is setable, False if not
     """
-    midCon_count =  self.wh.getConnectorCount(x, y)
+    midCon_count =  self.wh.getWallcenterCount(x, y)
 
-    #already locked connector
+    #already locked center
     if midCon_count > 1: return False
     
-    #If midconnector has 1 wall that is not on that orientation
-    (w1_x, w1_y), (w2_x, w2_y) = self.wh.getWallPair(x, y, o)    
-    if midCon_count == 1 and (self.wh.isWallSet(w1_x, w1_y, o) or self.wh.isWallSet(w2_x, w2_y, o)): return False
+    #If middle center has 1 wall that is not on that orientation
+    (w2_x, w2_y) = (x+1, y) if o == Orientation.H else (x, y+1)  
+    if midCon_count == 1 and (self.wh.isWallSet(x, y, o) or self.wh.isWallSet(w2_x, w2_y, o)): return False
 
     #if there are 2 or more loose connectors 
-    if self.wh.countLooseConnectorsInWallPair(x, y, o) in [2,3]: return True
+    if self.wh.countFreeCentersInWall(x, y, o) in [2,3]: return True
 
     #if players have a way to reach the goal even if the walls were set
     return self.findGoalReachability(x, y, o)
@@ -258,11 +258,12 @@ class Board():
         val (bool): State of the wall to be set
     """
     if Orientation.H == o:
-      dirs = [(Dir.N, Dir.E, Dir.S), (Dir.N, Dir.W, Dir.S), (Dir.S, Dir.E, Dir.N), (Dir.S, Dir.W, Dir.N)]
+      dirs = [(Dir.NE, Dir.S), (Dir.NW, Dir.S), (Dir.SE, Dir.N), (Dir.SW, Dir.N)]
     else: #if Orientation.V == o: 
-      dirs = [(Dir.E, Dir.N, Dir.W), (Dir.E, Dir.S, Dir.W), (Dir.W, Dir.N, Dir.E), (Dir.W, Dir.S, Dir.E)]
-    for d1, d2, d_passthrough in dirs:
-      f_x, f_y = self.wh.getConnectorField(x, y, d1, d2)
+      dirs = [(Dir.NE, Dir.W), (Dir.SE, Dir.W), (Dir.NW, Dir.E), (Dir.SW, Dir.E)]
+    for d, d_passthrough in dirs:
+      f_x = x + d[0]
+      f_y = y + d[1]
       self.fh.setWall(f_x, f_y, d_passthrough, val)
 
 ##########################################################################################################################

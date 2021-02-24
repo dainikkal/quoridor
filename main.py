@@ -1,11 +1,11 @@
 from flask import Flask, render_template, url_for, redirect, session
 from game.Game import Game 
 from datetime import timedelta
-import time
+import time, os
 
 app = Flask(__name__)
 
-app.secret_key = "LDh!Vdga5OdCo1D7It!#YTjWtSROj7TS%81Mz^mdVqyxv@u7BVaiuPbK6&QvUcJ@"
+app.secret_key = os.urandom(64)
 app.permanent_session_lifetime = timedelta(minutes=20)
 games = {}
 

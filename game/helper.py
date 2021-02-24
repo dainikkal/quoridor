@@ -9,6 +9,10 @@ class Dir():
   E = 1
   S = 2
   W = 3
+  NE = [1, 0]
+  NW = [0, 0]
+  SE = [1, 1]
+  SW = [0, 1]
 
 class UpDown():
   U = 0#Up

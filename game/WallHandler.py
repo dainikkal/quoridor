@@ -1,34 +1,25 @@
-from game.Wall import WallH, WallV
-from game.WallConnector import WallConnector
 from game.helper import BOARDSIZE, Dir, Orientation, Player
 
 class WallHandler():  
   def __init__(self):
     """Handles all wall related game logic."""
-    self.horizontal = [[WallH(x, y) for y in range(BOARDSIZE)] for x in range(BOARDSIZE+1)]
-    self.vertical = [[WallV(x, y) for y in range(BOARDSIZE+1)] for x in range(BOARDSIZE)]
-    self.connectors = [[WallConnector(x, y) for y in range(BOARDSIZE)] for x in range(BOARDSIZE)]
+    self.walls = {(x, y, o) : False for o in [Orientation.H, Orientation.V] for x in range(BOARDSIZE+1) for y in range(BOARDSIZE+1) \
+                                    if (x != BOARDSIZE or o == Orientation.H) and (y != BOARDSIZE or o == Orientation.V)} 
+    
+    self.wallcenter = {(x, y) : 0 for x in range(BOARDSIZE) for y in range(BOARDSIZE)}
+
     self.wallsOnPath = {}
     self.initWallOnPath()
 
-  def getConnectorWalls(self, x, y): return self.connectors[x][y].getWalls()
-  
-  def isConnectorSet(self, x, y): return False if self.connectors[x][y].getCount() < 2 else True
+  def setWall(self, x, y, o, val=True): self.walls[(x, y, o)] = val  
+  def isWallSet(self, x, y, o): return self.walls[(x, y, o)]
 
-  def getConnectorCount(self, x, y):
-    """Gets the count of an connector."""
-    return self.connectors[x][y].getCount()
+  def isCenterSet(self, x, y): return False if self.wallcenter[(x, y)] < 2 else True
+  def getWallcenterCount(self, x, y): return self.wallcenter[(x, y)]
+  def incrWallcenterCount(self, x, y, increment=1): self.wallcenter[(x, y)] += increment
 
-  def incrConnectorCount(self, x, y):
-    """Increments the count of an connector by 1."""
-    self.connectors[x][y].incrCount()
-
-  def getConnectorField(self, x, y, d1, d2): return self.connectors[x][y].getFields(d1, d2)
-
-  def getConnectorNeighbour(self, x, y, d): return self.connectors[x][y].Neighbours[d]
-
-  def countLooseConnectorsInWallPair(self, x, y, o):
-    """Count how many loose connector a wallpair has.
+  def countFreeCentersInWall(self, x, y, o):
+    """Count how many free center a wall has.
 
     Args:
         x (int): X-coordinate of wallpair
@@ -36,61 +27,22 @@ class WallHandler():
         o (Orientation): Orientation of wallpair
 
     Returns:
-        int: count of loose connectors
+        int: count of free Centers
     """
-    midCon_count =  self.connectors[x][y].getCount()
-    if o == Orientation.H:
-      con1_pos = self.connectors[x][y].Neighbours[Dir.W]
-      con2_pos = self.connectors[x][y].Neighbours[Dir.E]
+    midCon_count =  self.wallcenter[(x, y)]
+
+    if o == Orientation.V:
+      con1_pos = (x, y-1) if y != 0 else None
+      con2_pos = (x, y+1) if y != BOARDSIZE-1 else None
     else:
-      con1_pos = self.connectors[x][y].Neighbours[Dir.N]
-      con2_pos = self.connectors[x][y].Neighbours[Dir.S]
-    
-    con1_x, con1_y = con1_pos if con1_pos else [0, 0]
-    con2_x, con2_y = con2_pos if con2_pos else [0, 0]
-    con1_count = self.connectors[con1_x][con1_y].getCount() if con1_pos else 3
-    con2_count = self.connectors[con2_x][con2_y].getCount() if con2_pos else 3
+      con1_pos = (x+1, y) if o == Orientation.H and x != BOARDSIZE-1 else None
+      con2_pos = (x-1, y) if o == Orientation.H and x != 0 else None
+
+    con1_count = self.wallcenter[con1_pos] if con1_pos else 3
+    con2_count = self.wallcenter[con2_pos] if con2_pos else 3
 
     return [con1_count, midCon_count, con2_count].count(0)
 
-  def setWall(self, x, y, o):
-    """Updates the wall.
-
-    Args:
-        x (int): X-coordinate
-        y (int): Y-coordinate
-        o (Orientation): Orientation of the wall
-    """
-    if o == Orientation.H: self.horizontal[x][y].setWall()
-    if o == Orientation.V: self.vertical[x][y].setWall()
-  
-  def isWallSet(self, x, y, o):
-    """Returns if wall is set.
-
-    Args:
-        x (int): X-coordinate
-        y (int): Y-coordinate
-        o (Orientation): Orientation of the wall
-
-    Returns:
-        Bool: True if set, False if not
-    """
-    if o == Orientation.H: return self.horizontal[x][y].isWallSet()
-    if o == Orientation.V: return self.vertical[x][y].isWallSet()
-
-  def getWallPair(self, x, y, o):
-    """Get wall positions based on connector position.
-
-    Args:
-        x (int): X-coordinate
-        y (int): Y-coordinate
-        o (Orientation): Orientation of the wall
-
-    Returns:
-        List: List [(x1, y1), (x2, y2)] position of the wall 
-    """
-    if o == Orientation.H: return [(x, y), (x+1, y)] 
-    if o == Orientation.V: return [(x, y), (x, y+1)]
 
   def initWallOnPath(self):
     """initializes wallsOnPath to map to False."""

@@ -19,7 +19,6 @@ def create_session():
 
 @app.route("/<command>")
 def action(command):  
-  games[session['gameid']].wait()
   games[session['gameid']].execute_action(command)
   return redirect(url_for("home"))
 

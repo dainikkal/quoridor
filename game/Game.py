@@ -91,10 +91,6 @@ class Game():
 
         self.classes[(y*2*17 + x*2+1)] = val
 
-  def wait(self):
-    import time
-    time.sleep(10)
-
   def add_fields_to_classes(self):
     for y in range(0, 9):
       for x in range(0, 9):

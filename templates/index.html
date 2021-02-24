@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+
+
+{% block table %}
+<table>
+{% for current_r in range(17) %}
+  <tr class="row{{current_r}}">
+  {% for current_c in range(17) %}
+    <td class="{{classes[current_r*17+current_c]}}">
+    {% if links[current_r*17+current_c] != "" %}
+    <a href="/{{links[current_r*17+current_c]}}"></a>
+    {% else %}
+    <a></a>
+    {% endif %}
+    </td>
+  {% endfor %}
+  <tr>
+{% endfor %}
+</table>
+{% endblock table %}

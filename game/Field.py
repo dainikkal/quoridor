@@ -1,4 +1,4 @@
-from helper import Player, Dir, BOARDSIZE, INFINITE
+from game.helper import Player, Dir, BOARDSIZE, INFINITE
 
 class Field():  
   def __init__(self, x, y):

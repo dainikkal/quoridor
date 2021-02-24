@@ -1,0 +1,26 @@
+td.Square a {
+  display: block;
+  padding: 6px;
+  border: 1px solid black;
+  overflow: hidden;
+}
+
+td.Square.V a {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+td.Square.F a { padding: 16px;}
+
+td.F.P1 a{ background-color: blue;}
+td.F.P2 a { background-color: red;}
+
+td.F.Move:not(:hover) a { background-color: greenyellow;}
+td.F.Move:hover a { background-color: green;}
+
+td.Wall.set a { background-color: #393939;}
+td.Wall.open a { background-color: #A9A9A9;}
+
+td.Wall.H.setable:hover a, 
+td.Wall.V.setable:hover a, 
+td.Wall.open.hover a { background-color: #696969;}

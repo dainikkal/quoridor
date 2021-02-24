@@ -1,4 +1,4 @@
-from helper import BOARDSIZE, LeftRight, Orientation, Dir, UpDown
+from game.helper import BOARDSIZE, LeftRight, Orientation, Dir, UpDown
 
 class Wall():
   def __init__(self, orientation, x, y):

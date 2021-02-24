@@ -1,6 +1,6 @@
-from Wall import WallH, WallV
-from WallConnector import WallConnector
-from helper import BOARDSIZE, Dir, Orientation, Player
+from game.Wall import WallH, WallV
+from game.WallConnector import WallConnector
+from game.helper import BOARDSIZE, Dir, Orientation, Player
 
 class WallHandler():  
   def __init__(self):
@@ -13,6 +13,8 @@ class WallHandler():
 
   def getConnectorWalls(self, x, y): return self.connectors[x][y].getWalls()
   
+  def isConnectorSet(self, x, y): return False if self.connectors[x][y].getCount() < 2 else True
+
   def getConnectorCount(self, x, y):
     """Gets the count of an connector."""
     return self.connectors[x][y].getCount()

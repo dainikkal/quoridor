@@ -1,11 +1,9 @@
-from Playerstate import Playerstate
-from typing import List
-from Path import Path
-from PlayerHandler import PlayerHandler
-from helper import BOARDSIZE, CycledetectionRetVal, Dir, INFINITE, MINUSINFINITE, Orientation, Player, mir
-from FieldHandler import FieldHandler
-from WallHandler import WallHandler
-import copy
+from game.Playerstate import Playerstate
+from game.Path import Path
+from game.PlayerHandler import PlayerHandler
+from game.helper import BOARDSIZE, CycledetectionRetVal, Dir, INFINITE, MINUSINFINITE, Orientation, Player, mir
+from game.FieldHandler import FieldHandler
+from game.WallHandler import WallHandler
 
 class Board():
   def __init__(self):
@@ -267,13 +265,8 @@ class Board():
       f_x, f_y = self.wh.getConnectorField(x, y, d1, d2)
       self.fh.setWall(f_x, f_y, d_passthrough, val)
 
-
-
-    
-
-
 ##########################################################################################################################
-                                                          #TO SORT
+                                                          #EVAL
 ##########################################################################################################################
 
   def evalPos(self, p1_pos, p2_pos):

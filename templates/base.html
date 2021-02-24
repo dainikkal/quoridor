@@ -1,0 +1,13 @@
+<!doctype html>
+<html>
+<head>
+  <title>Quoridor</title>
+  <script src="{{url_for('static', filename='jquery-3.5.1.min.js')}}"></script>
+  <script src="{{url_for('static', filename='hover.js')}}"></script>
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
+</head>
+<body>
+  <h1>Home Page!</h1>
+  {% block table %}{% endblock table %}
+</body>
+</html>

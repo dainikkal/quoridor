@@ -1,4 +1,4 @@
-from helper import Player
+from game.helper import Player
 
 class Playerstate():
   def __init__(self, p1_pos, p2_pos, p_current, h_p1, h_p2, oldstate = None):

@@ -1,4 +1,4 @@
-from helper import Player, BOARDSIZE, BOARDSIZEMID
+from game.helper import Player, BOARDSIZE, BOARDSIZEMID
 
 class PlayerHandler():
   def __init__(self):

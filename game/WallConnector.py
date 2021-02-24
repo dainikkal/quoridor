@@ -1,4 +1,4 @@
-from helper import Dir, BOARDSIZE, Orientation
+from game.helper import Dir, BOARDSIZE, Orientation
 
 class WallConnector():
   def __init__(self, x, y):

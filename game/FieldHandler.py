@@ -1,6 +1,6 @@
-from Path import Path
-from Field import Field
-from helper import BOARDSIZE, BOARDSIZEMID, Dir, HEURISTICJUMP, Player, mir, UpDown
+from game.Path import Path
+from game.Field import Field
+from game.helper import BOARDSIZE, BOARDSIZEMID, Dir, HEURISTICJUMP, Player, mir, UpDown
 
 class FieldHandler():
   def __init__(self):

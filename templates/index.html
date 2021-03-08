@@ -19,3 +19,11 @@
 {% endfor %}
 </table>
 {% endblock table %}
+
+{% block  winmessage%}
+{% if winner == 0%}
+Player 1 won
+{% elif winner == 1%}
+Player 2 won
+{% endif %}
+{% endblock  winmessage%}

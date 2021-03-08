@@ -1,7 +1,7 @@
 from game.Playerstate import Playerstate
 from game.Path import Path
 from game.PlayerHandler import PlayerHandler
-from game.helper import BOARDSIZE, CycledetectionRetVal, Dir, INFINITE, MINUSINFINITE, Orientation, Player, mir
+from game.helper import BOARDSIZE, Dir, INFINITE, MINUSINFINITE, Orientation, Player, mir
 from game.FieldHandler import FieldHandler
 from game.WallHandler import WallHandler
 
@@ -16,83 +16,97 @@ class Board():
 #######################################################################################################################
                                                     #SET WALL
 ##########################################################################################################################
-  def setWall(self, x, y, o):
+  def setWall(self, x, y, o, val=True):
     """Sets a wall pair and updates information.
 
     Args:
         x (int): X-coordinate of the wallpair
         y (int): Y-coordinate of the wallpair
         o (Orientation): Orientation of the wall
+        val (bool): if the wall is to be set or unset
     """
-    self.setWallPair(x, y, o)
+    self.setWallPair(x, y, o, val)
     self.fh.reconnectDisconnectedFields(Player.P1)
     self.fh.reconnectDisconnectedFields(Player.P2)
     self.updatePlayerPaths()
 
 
-  def setWallPair(self, x, y, o):
+  def setWallPair(self, x, y, o, val=True):
     """Sets a wallpair.
 
     Args:
         x (int): X-coordinate of the wallpair
         y (int): Y-coordinate of the wallpair
         o (Orientation): Orientation of the wall
+        val (bool): if the wall is to be set or unset
     """
     if o == Orientation.H: 
-      self.setHorizontalWall(x, y)
-      self.setHorizontalWall(x+1, y)
+      self.setHorizontalWall(x, y, val)
+      self.setHorizontalWall(x+1, y, val)
 
     if o == Orientation.V: 
-      self.setVerticalWall(x, y)
-      self.setVerticalWall(x, y+1)
+      self.setVerticalWall(x, y, val)
+      self.setVerticalWall(x, y+1, val)
 
-  def setHorizontalWall(self, x, y):
+  def setHorizontalWall(self, x, y, val=True):
     """Sets a horizontal wall.
 
     Args:
         x (int): X-Coordinate
         y (int): Y-Coordinate
+        val (bool): if the wall is to be set or unset
     """
-    self.wh.setWall(x, y, Orientation.H)
+    self.wh.setWall(x, y, Orientation.H, val)
 
     self.fh.removeNextAndSetWall(x, y, Dir.S)
     self.fh.removeNextAndSetWall(x, y+1, Dir.N)
-    
-    if x != 0: self.wh.incrWallcenterCount(x-1, y)
-    if x != BOARDSIZE: self.wh.incrWallcenterCount(x, y)
 
-  def setVerticalWall(self, x, y):
+    increment = 1 if val else -1
+    if x != 0: self.wh.incrWallcenterCount(x-1, y, increment)
+    if x != BOARDSIZE: self.wh.incrWallcenterCount(x, y, increment)
+
+  def setVerticalWall(self, x, y, val=True):
     """Sets a vertical wall.
 
     Args:
         x (int): X-Coordinate
         y (int): Y-Coordinate
+        val (bool): if the wall is to be set or unset
     """
-    self.wh.setWall(x, y, Orientation.V)
+    self.wh.setWall(x, y, Orientation.V, val)
 
     self.fh.removeNextAndSetWall(x, y, Dir.E)
     self.fh.removeNextAndSetWall(x+1, y, Dir.W)
 
-    if y != 0: self.wh.incrWallcenterCount(x, y-1)
-    if y != BOARDSIZE: self.wh.incrWallcenterCount(x, y)
+    increment = 1 if val else -1
+    if y != 0: self.wh.incrWallcenterCount(x, y-1, increment)
+    if y != BOARDSIZE: self.wh.incrWallcenterCount(x, y, increment)
 
 ##########################################################################################################################
                                                       #MOVE PLAYER
 ##########################################################################################################################
-  def movePlayer(self, p, d, d2 = Dir.NoDir):
+  def movePlayer(self, p, state, d, d2 = Dir.NoDir):
     """Move player to direction.
 
     Args:
         p (Player): Player
+        state (Playerstate): Playerstate before the turn.
         d (Dir): Direction
         d2 (Dir, optional): Direction after Jump. Defaults to Dir.NoDir.
+
+    Returns:
+        state: new state after the player.
     """
     #Assumption viable direction
     x, y = self.ph.getPos(p)
     new_x, new_y = self.fh.movePlayer(x, y, p, d, d2)
     self.ph.setPos(p, new_x, new_y)
+    new_h = self.fh.getHeuristic(new_x, new_y, p)
+    state = Playerstate.newPlayerstate(state, [new_x, new_y], new_h)   
 
     self.updatePlayerPaths()
+
+    return state
 
   def getPlayerMoves(self, state):
     """Get all possible moves of a player.
@@ -103,7 +117,7 @@ class Board():
     Returns:
         List: List of tuple(Direction, direction in case of a jump, heuristic of new place, state after the move)
     """
-    p = state.p_current
+    p = state.p_now
     x , y = state.p1_pos if p == Player.P1 else state.p2_pos
     other_pos = state.p2_pos if p == Player.P1 else state.p1_pos
 
@@ -135,7 +149,7 @@ class Board():
           moves.append(self.zipMove(pos_jump, p, state, d, d))
     return moves
 
-  def zipMove(self, pos, p, state, d, d2):    
+  def zipMove(self, pos, p, state, d, d2):
     x, y = pos
     h = self.fh.getHeuristic(x, y, p)
     new_state = Playerstate.newPlayerstate(state, pos, h)

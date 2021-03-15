@@ -1,0 +1,27 @@
+{% extends 'index.html' %}
+
+{% block player2 %}
+<p class="p2info {{currentplayer[1]}}"> Player 2 | Walls Left:{{p2walls}} {{p2ai}}<p>
+{% endblock player2 %}
+
+{% block table %}
+<table>
+{% for current_r in range(17) %}
+  <tr class="row{{current_r}}">
+  {% for current_c in range(17) %}
+    <td class="{{classes[current_r*17+current_c]}}">
+    {% if links[current_r*17+current_c] != "" %}
+    <a href="/{{links[current_r*17+current_c]}}"></a>
+    {% else %}
+    <a></a>
+    {% endif %}
+    </td>
+  {% endfor %}
+  <tr>
+{% endfor %}
+</table>
+{% endblock table %}
+
+{% block player1 %}
+<p class="p1info {{currentplayer[0]}}"> Player 1 | Walls Left:{{p1walls}} {{p1ai}}<p>
+{% endblock player1 %}

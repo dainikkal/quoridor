@@ -1,25 +1,5 @@
 {% extends 'base.html' %}
 
-
-
-{% block table %}
-<table>
-{% for current_r in range(17) %}
-  <tr class="row{{current_r}}">
-  {% for current_c in range(17) %}
-    <td class="{{classes[current_r*17+current_c]}}">
-    {% if links[current_r*17+current_c] != "" %}
-    <a href="/{{links[current_r*17+current_c]}}"></a>
-    {% else %}
-    <a></a>
-    {% endif %}
-    </td>
-  {% endfor %}
-  <tr>
-{% endfor %}
-</table>
-{% endblock table %}
-
 {% block  winmessage%}
 {% if winner == 0%}
 Player 1 won
@@ -27,3 +7,45 @@ Player 1 won
 Player 2 won
 {% endif %}
 {% endblock  winmessage%}
+
+
+{% block leftblock %}
+<table>
+  <tr><td><div class="player2info"> {% block player2 %}{% endblock player2 %} 
+  </div></td></tr>
+  <tr><td><div class="board"> {% block table %}{% endblock table %} 
+  </div></td></tr>
+  <tr><td><div class="player1info"> {% block player1 %}{% endblock player1 %} 
+  </div></td></tr>
+</table>
+{% endblock leftblock %}
+
+
+
+{% block rightblock %}
+<table>
+  <!-- 
+
+  --> 
+  <tr><td class="Button {{clickables[0]}}"> <a {{buttonhrefs[0]}}>undo move
+  </a></td></tr>
+  <tr><td class="Button {{clickables[1]}}"> <a {{buttonhrefs[1]}}>redo move
+  </a></td></tr>
+  <tr><td class="Text Log"> 
+    <textarea rows="{{log_rows}}" cols="15">{{log_text}}
+    </textarea>
+  </td></tr>
+  <tr><td class="Button {{clickables[2]}}"> <a {{buttonhrefs[2]}}>load move
+  </a></td></tr>
+  <tr><td class="Button {{clickables[3]}}"> <a {{buttonhrefs[3]}}>reset game
+  </a></td></tr>
+  <tr><td class="Button {{clickables[4]}}"><a {{buttonhrefs[4]}}>randomize game
+  </a></td></tr>
+  <tr><td class="Button Unclickable"><a href="/togglehelp">toggle help
+  </a></td></tr>
+  <tr><td class="Button Unclickable"><a href="/togglep1">toggle AI P1
+  </a></td></tr>
+  <tr><td class="Button Unclickable"><a href="/togglep2">toggle AI P2
+  </a></td></tr>
+</table>
+{% endblock rightblock %}

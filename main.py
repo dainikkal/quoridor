@@ -57,7 +57,11 @@ def action(command):
     Returns:
         redirect: redirect to home function
     """
-    games[session['gameid']].execute_action(command)
+    if command == "reset":
+        games.pop(session['gameid'])
+        whentoremove.pop(session['gameid'])
+    else:
+        games[session['gameid']].execute_action(command)
     return redirect(url_for("home"))
 
 
@@ -71,10 +75,43 @@ def home():
     classes = games[session['gameid']].get_classes()
     links = games[session['gameid']].get_links()
     winner = games[session['gameid']].get_winner()
+    log_text = ""
+    log_rows = log_text.count("\n")
+    clickables = ["Clickable", 
+                  "Unclickable", 
+                  "Clickable", 
+                  "Clickable", 
+                  "Unclickable"]
+    buttonhrefs = ['href="/undo"',
+                   'href="/redo"',
+                   'href="/load"',
+                   'href=/reset',
+                   'href="/randomize"']
+
+    hrefs = [buttonhrefs[i] if clickables[i] == "Clickable" else '' 
+                            for i in range(5)]
+
+    p1walls = 10
+    p2walls = 10
+    p1ai = ""
+    p2ai = "(AI)"
+    currentplayer = ["Current",""]
+
     if winner != Player.Empty: 
         links = ["" for _ in range(17 * 17)]
-    return render_template("index.html", classes=classes, \
-                           links=links, winner=winner)
+    return render_template("game.html", 
+                           classes=classes, \
+                           links=links, 
+                           winner=winner,
+                           clickables=clickables,
+                           log_rows=log_rows,
+                           log_text=log_text,
+                           buttonhrefs=hrefs,
+                           p1walls=p1walls,
+                           p2walls=p2walls,
+                           p1ai=p1ai,
+                           p2ai=p2ai,
+                           currentplayer=currentplayer)
 
 
 if __name__ == "__main__":

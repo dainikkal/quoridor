@@ -1,0 +1,18 @@
+td.Button a {
+    display: block;
+    padding: 6px;
+    border: 1px solid black;
+    overflow: hidden;
+    text-decoration: none;
+    color: #000000;
+    text-align: center;
+}
+
+
+td.Button.Unclickable a {
+    color: #A9A9A9;
+}
+
+td.Button.Clickable:hover a {
+    background-color: #A9A9A9;
+}

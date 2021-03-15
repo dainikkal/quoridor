@@ -24,3 +24,22 @@ td.Wall.open a { background-color: #A9A9A9;}
 td.Wall.H.setable:hover a, 
 td.Wall.V.setable:hover a, 
 td.Wall.open.hover a { background-color: #696969;}
+
+
+p.p2info {
+  font-size: larger;
+  border: 2px solid red;
+}
+p.p2info.Current{
+  font-weight: bold;
+  border: 3px solid red
+}
+
+p.p1info {
+  font-size: larger;
+  border: 2px solid blue;
+}
+p.p1info.Current {
+  font-weight: bold;
+  border: 3px solid blue
+}

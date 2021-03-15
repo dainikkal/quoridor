@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, session
+from flask.globals import request
 from game.Game import Game
 from game.helper import * 
 from datetime import datetime, timedelta
@@ -60,6 +61,10 @@ def action(command):
     if command == "reset":
         games.pop(session['gameid'])
         whentoremove.pop(session['gameid'])
+    elif command == "redo":
+        games[session['gameid']].execute_redo()
+    elif command == "load":
+        games[session['gameid']] = Game(request.args.get('log'))
     else:
         games[session['gameid']].execute_action(command)
     return redirect(url_for("home"))
@@ -75,18 +80,17 @@ def home():
     classes = games[session['gameid']].get_classes()
     links = games[session['gameid']].get_links()
     winner = games[session['gameid']].get_winner()
-    log_text = ""
-    log_rows = log_text.count("\n")
+    log_text = games[session['gameid']].get_gamelog()
     clickables = ["Clickable", 
+                  "Clickable", 
                   "Unclickable", 
                   "Clickable", 
-                  "Clickable", 
-                  "Unclickable"]
-    buttonhrefs = ['href="/undo"',
-                   'href="/redo"',
-                   'href="/load"',
-                   'href=/reset',
-                   'href="/randomize"']
+                  "Clickable"]
+    buttonhrefs = ['href=/reset',
+                   'href=/undo',
+                   'href=/redo',
+                   'href=/randomize',
+                   'href=/load']
 
     hrefs = [buttonhrefs[i] if clickables[i] == "Clickable" else '' 
                             for i in range(5)]
@@ -104,7 +108,6 @@ def home():
                            links=links, 
                            winner=winner,
                            clickables=clickables,
-                           log_rows=log_rows,
                            log_text=log_text,
                            buttonhrefs=hrefs,
                            p1walls=p1walls,

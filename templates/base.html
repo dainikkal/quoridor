@@ -6,14 +6,15 @@
   <script src="{{url_for('static', filename='hover.js')}}"></script>
   <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='game.css')}}">
   <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='button.css')}}">
+  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
 </head>
 <body>
   <h1>Home Page!</h1>
   {% block winmessage %}{% endblock winmessage %}
   <table>
   <tr>
-  <td><div> {% block leftblock %}{% endblock leftblock %} </div></td>
-  <td><div> {% block rightblock %}{% endblock rightblock %} </div></td>
+  <td><div class="left"> {% block leftblock %}{% endblock leftblock %} </div></td>
+  <td><div class="right"> {% block rightblock %}{% endblock rightblock %} </div></td>
   </tr>
   </table>
 </body>

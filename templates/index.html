@@ -27,19 +27,13 @@ Player 2 won
   <!-- 
 
   --> 
-  <tr><td class="Button {{clickables[0]}}"> <a {{buttonhrefs[0]}}>undo move
+  <tr><td class="Button {{clickables[0]}}"> <a {{buttonhrefs[0]}}>reset game
   </a></td></tr>
-  <tr><td class="Button {{clickables[1]}}"> <a {{buttonhrefs[1]}}>redo move
+  <tr><td class="Button {{clickables[1]}}"> <a {{buttonhrefs[1]}}>undo move
   </a></td></tr>
-  <tr><td class="Text Log"> 
-    <textarea rows="{{log_rows}}" cols="15">{{log_text}}
-    </textarea>
-  </td></tr>
-  <tr><td class="Button {{clickables[2]}}"> <a {{buttonhrefs[2]}}>load move
+  <tr><td class="Button {{clickables[2]}}"> <a {{buttonhrefs[2]}}>redo move
   </a></td></tr>
-  <tr><td class="Button {{clickables[3]}}"> <a {{buttonhrefs[3]}}>reset game
-  </a></td></tr>
-  <tr><td class="Button {{clickables[4]}}"><a {{buttonhrefs[4]}}>randomize game
+  <tr><td class="Button {{clickables[3]}}"><a {{buttonhrefs[3]}}>randomize game
   </a></td></tr>
   <tr><td class="Button Unclickable"><a href="/togglehelp">toggle help
   </a></td></tr>
@@ -47,5 +41,15 @@ Player 2 won
   </a></td></tr>
   <tr><td class="Button Unclickable"><a href="/togglep2">toggle AI P2
   </a></td></tr>
+  <tr><td class="Button {{clickables[4]}}"> 
+    <a a href="javascript:;" 
+    onclick="this.href='\load?log=' + document.getElementById('ta_log').value">
+    load move
+    </a>
+  </td></tr>
+  <tr><td class="Text Log" > 
+    <textarea id="ta_log" rows="15" cols="15">{{log_text}}
+    </textarea>
+  </td></tr>
 </table>
 {% endblock rightblock %}

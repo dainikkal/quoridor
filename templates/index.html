@@ -27,13 +27,13 @@ Player 2 won
   <!-- 
 
   --> 
-  <tr><td class="Button {{clickables[0]}}"> <a {{buttonhrefs[0]}}>reset game
+  <tr><td class="Button Clickable"> <a href="/reset">reset game
   </a></td></tr>
-  <tr><td class="Button {{clickables[1]}}"> <a {{buttonhrefs[1]}}>undo move
+  <tr><td class="Button {{clickables[0]}}"> <a {{buttonhrefs[0]}}>undo move
   </a></td></tr>
-  <tr><td class="Button {{clickables[2]}}"> <a {{buttonhrefs[2]}}>redo move
+  <tr><td class="Button {{clickables[1]}}"> <a {{buttonhrefs[1]}}>redo move
   </a></td></tr>
-  <tr><td class="Button {{clickables[3]}}"><a {{buttonhrefs[3]}}>randomize game
+  <tr><td class="Button Unclickable"><a href="/random">randomize game
   </a></td></tr>
   <tr><td class="Button Unclickable"><a href="/togglehelp">toggle help
   </a></td></tr>
@@ -41,7 +41,7 @@ Player 2 won
   </a></td></tr>
   <tr><td class="Button Unclickable"><a href="/togglep2">toggle AI P2
   </a></td></tr>
-  <tr><td class="Button {{clickables[4]}}"> 
+  <tr><td class="Button Clickable"> 
     <a a href="javascript:;" 
     onclick="this.href='\load?log=' + document.getElementById('ta_log').value">
     load move

@@ -20,17 +20,18 @@ class FieldHandler():
 ##########################################################################################################################
                                                     #SET WALL
 ##########################################################################################################################
-  def removeNextAndSetWall(self, x, y, d):
+  def removeNextAndSetWall(self, x, y, d, val=True):
     """Removes Next that wall pierces, disconnects the field and sets the Wall. 
 
     Args:
         x (int): X-coordinate
         y (int): Y-coordinate
         d (Dir): Direction
+        val (bool): if the wall is to be set or unset
     """
     self.removeNextAndAddToDisco(x, y, Player.P1, d)
     self.removeNextAndAddToDisco(x, y, Player.P2, d)
-    self.fields[(x, y)].setWall(d)
+    self.fields[(x, y)].setWall(d,val)
 
   def removeNextAndAddToDisco(self, x, y, p, d):
     """Removes Nexts and according Prevs and disconnects field.

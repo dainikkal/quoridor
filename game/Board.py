@@ -58,8 +58,8 @@ class Board():
     """
     self.wh.setWall(x, y, Orientation.H, val)
 
-    self.fh.removeNextAndSetWall(x, y, Dir.S)
-    self.fh.removeNextAndSetWall(x, y+1, Dir.N)
+    self.fh.removeNextAndSetWall(x, y, Dir.S, val)
+    self.fh.removeNextAndSetWall(x, y+1, Dir.N, val)
 
     increment = 1 if val else -1
     if x != 0: self.wh.incrWallcenterCount(x-1, y, increment)
@@ -75,8 +75,8 @@ class Board():
     """
     self.wh.setWall(x, y, Orientation.V, val)
 
-    self.fh.removeNextAndSetWall(x, y, Dir.E)
-    self.fh.removeNextAndSetWall(x+1, y, Dir.W)
+    self.fh.removeNextAndSetWall(x, y, Dir.E, val)
+    self.fh.removeNextAndSetWall(x+1, y, Dir.W, val)
 
     increment = 1 if val else -1
     if y != 0: self.wh.incrWallcenterCount(x, y-1, increment)

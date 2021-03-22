@@ -61,6 +61,8 @@ def action(command):
     if command == "reset":
         games.pop(session['gameid'])
         whentoremove.pop(session['gameid'])
+    elif command == "undo":
+        games[session['gameid']].execute_undo()
     elif command == "redo":
         games[session['gameid']].execute_redo()
     elif command == "load":
@@ -82,18 +84,16 @@ def home():
     winner = games[session['gameid']].get_winner()
     log_text = games[session['gameid']].get_gamelog()
     clickables = ["Clickable", 
-                  "Clickable", 
-                  "Unclickable", 
-                  "Clickable", 
-                  "Clickable"]
-    buttonhrefs = ['href=/reset',
-                   'href=/undo',
-                   'href=/redo',
-                   'href=/randomize',
-                   'href=/load']
+                  "Unclickable"]
+    buttonhrefs = ['href=/undo',
+                   'href=/redo']
+    clickables[0] = "Clickable" if games[session['gameid']].get_undoable() \
+                                else "Unclickable"
+    clickables[1] = "Clickable" if games[session['gameid']].get_redoable() \
+                                else "Unclickable"
 
     hrefs = [buttonhrefs[i] if clickables[i] == "Clickable" else '' 
-                            for i in range(5)]
+                            for i in range(len(clickables))]
 
     p1walls = 10
     p2walls = 10

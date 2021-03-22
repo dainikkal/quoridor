@@ -1,7 +1,7 @@
 """Handles instance of a game."""
 from flask.helpers import safe_join
 from game.Playerstate import Playerstate
-from game.helper import Dir, Orientation, Player
+from game.helper import BOARDSIZE, BOARDSIZEMID, Dir, Orientation, Player, mir
 from game.Board import Board
 
 
@@ -24,6 +24,7 @@ class Game():
         self.update_classes()
         self.redolog = []
         self.gamelog = []
+        self.movelog = ([],[])
         self.load(log)
 
 
@@ -47,10 +48,57 @@ class Game():
 
     def get_notation(self, x, y, o=None):
         letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
-        orientation = "h" if o== Orientation.H \
-                          else "v" \
-                          if o==Orientation.V else ""  
+        if o == Orientation.H: 
+            orientation = "h"
+        elif o == Orientation.V:
+            orientation = "v"
+        else:
+            orientation =""  
         return letters[x] + str(y + 1) + orientation
+
+    def get_move_from_notation(self, code):
+        letters = {"a":0, "b":1, "c":2, 
+                   "d":3, "e":4, "f":5, 
+                   "g":6, "h":7, "i":8}
+        x = letters[code[0]]
+        y = int(code[1]) - 1
+        if len(code) == 2:
+            o = None
+        elif 'v' == code[2]:
+            o = Orientation.V
+        elif 'h' == code[2]:
+            o = Orientation.H
+        return x, y, o
+
+    def execute_undo(self):
+        last = self.gamelog[-1]
+        if last[2] != None:
+            p = Player.P2
+            move = last[2]
+            self.gamelog[-1] = last[:-1]
+            self.gamelog[-1].append(None)
+        else:
+            p = Player.P1
+            move = last[1]
+            self.gamelog.pop()      
+        self.redolog.append(move)
+
+        x, y, o = self.get_move_from_notation(move)
+
+        if o != None:
+            self.b.setWall(x, y, o, False)
+        else:
+            d1, d2 = self.movelog[p].pop()
+            d1_rev = mir(d1)
+            if d2 != Dir.NoDir:
+                d2_rev = mir(d2)
+                self.state = self.b.movePlayer(p, self.state, d2_rev, d1_rev)
+            else:
+                self.state = self.b.movePlayer(p, self.state, d1_rev)
+        
+        self.turn()
+        self.update_classes()
+        self.state.p_now = self.currentPlayer
 
 
     def execute_redo(self):
@@ -65,9 +113,10 @@ class Game():
         Args:
             action_code (string): key for the dict with the function pointers.
         """
+        if action_code not in self.tasks.keys(): return
+
         if not redo: self.redolog.clear()
 
-        if action_code not in self.tasks.keys(): return
         action, params = self.tasks[action_code]
         action(*params)
 
@@ -78,7 +127,7 @@ class Game():
         """Moves player and check for win."""
         self.state = self.b.movePlayer(self.currentPlayer, self.state, d, d2)
 
-        turnnumber = len(self.gamelog)         
+        turnnumber = len(self.gamelog)
         if self.currentPlayer == Player.P1:
             x, y = self.state.p1_pos
             action = self.get_notation(x, y, None)
@@ -88,6 +137,7 @@ class Game():
             x, y = self.state.p2_pos
             turn[2] = self.get_notation(x, y, None)
 
+        self.movelog[self.currentPlayer].append([d, d2])
         self.winner = self.b.isGameOver(self.state)
 
     def set_wall(self, x, y, o): 
@@ -105,19 +155,19 @@ class Game():
         """Updates the classes for html."""
         self.tasks.clear()
         for i in range(17 * 17): self.links[i] = ""
-        self.add_fields_to_classes()
-        self.add_wallcenters_to_classes()
-        self.add_horizontal_walls_to_classes()
-        self.add_vertical_walls_to_classes()
+        self.update_fields_to_classes()
+        self.update_wallcenters_to_classes()
+        self.update_horizontal_walls_to_classes()
+        self.update_vertical_walls_to_classes()
 
-    def get_relative_horizontal_wall(self, x, y):
+    def calc_relative_horizontal_wall(self, x, y):
         return (y*2+1)*17 + x*2        
-    def get_relative_vertical_wall(self, x, y):
+    def calc_relative_vertical_wall(self, x, y):
         return y*2*17 + x*2+1 
-    def get_relative_field(self, x, y):
+    def calc_relative_field(self, x, y):
         return x*2 + 17*2*y
 
-    def add_wallcenters_to_classes(self):
+    def update_wallcenters_to_classes(self):
         """Update the wall centers for html."""
         for y in range(0, 8):
             for x in range(0, 8):
@@ -130,7 +180,7 @@ class Game():
 
                 self.classes[(y*2+1)*17 + x*2+1] = val
 
-    def add_horizontal_walls_to_classes(self):
+    def update_horizontal_walls_to_classes(self):
         """Update the horizontal wall for html."""
         for y in range(0,8):
             for x in range(0, 9):
@@ -143,13 +193,13 @@ class Game():
                               else " open"
                 if x != 8 and self.b.isWallSetable(x, y, Orientation.H): 
                     val += " setable"
-                    code = self.get_notation(x,y, Orientation.V)
-                    self.links[self.get_relative_horizontal_wall(x, y)] = code
+                    code = self.get_notation(x,y, Orientation.H)
+                    self.links[self.calc_relative_horizontal_wall(x, y)] = code
                     self.tasks[code] = [self.set_wall, [x, y, Orientation.H]]
 
-                self.classes[self.get_relative_horizontal_wall(x, y)] = val
+                self.classes[self.calc_relative_horizontal_wall(x, y)] = val
 
-    def add_vertical_walls_to_classes(self):
+    def update_vertical_walls_to_classes(self):
         """Update the wall centers for html."""
         for y in range(0,9):
             for x in range(0,8):
@@ -163,23 +213,23 @@ class Game():
                 
                 if y != 8 and self.b.isWallSetable(x, y, Orientation.V):
                     val += " setable"
-                    code = self.get_notation(x,y, Orientation.H)
-                    self.links[self.get_relative_vertical_wall(x, y)] = code
+                    code = self.get_notation(x,y, Orientation.V)
+                    self.links[self.calc_relative_vertical_wall(x, y)] = code
                     self.tasks[code] = [self.set_wall, [x, y, Orientation.V]]
 
-                self.classes[self.get_relative_vertical_wall(x, y)] = val
+                self.classes[self.calc_relative_vertical_wall(x, y)] = val
 
-    def add_fields_to_classes(self):
+    def update_fields_to_classes(self):
         """Update the centers for html."""
         for y in range(0, 9):
             for x in range(0, 9):
-                self.classes[self.get_relative_field(x,y)] = \
+                self.classes[self.calc_relative_field(x,y)] = \
                     "Square F F" + str(x) + "-" + str(y)
 
         p1_x, p1_y = self.b.ph.getPos(Player.P1)
         p2_x, p2_y = self.b.ph.getPos(Player.P2)    
-        self.classes[self.get_relative_field(p1_x, p1_y)] += " P1"
-        self.classes[self.get_relative_field(p2_x, p2_y)] += " P2"
+        self.classes[self.calc_relative_field(p1_x, p1_y)] += " P1"
+        self.classes[self.calc_relative_field(p2_x, p2_y)] += " P2"
 
         h_p1 = self.b.fh.getHeuristic(p1_x, p1_y, Player.P1)
         h_p2 = self.b.fh.getHeuristic(p2_x, p2_y, Player.P2)
@@ -190,7 +240,7 @@ class Game():
             x, y = m[3].p1_pos if self.currentPlayer == Player.P1 \
                               else m[3].p2_pos
             
-            pos_relative = self.get_relative_field(x, y)
+            pos_relative = self.calc_relative_field(x, y)
 
             move_code = self.get_notation(x, y)
 
@@ -211,3 +261,7 @@ class Game():
             else:
                 log += "\n"
         return log
+    def get_undoable(self):
+        return True if len(self.gamelog) != 0 else False
+    def get_redoable(self):
+        return True if len(self.redolog) != 0 else False

@@ -1,7 +1,7 @@
 """Module with Enums."""
 
 
-class Player():
+class Player:
     """Enum for player."""
 
     Empty = -1
@@ -9,7 +9,7 @@ class Player():
     P2 = 1
 
 
-class Dir():
+class Dir:
     """Enum for Directions."""
 
     NoDir = -1
@@ -23,21 +23,21 @@ class Dir():
     SW = [0, 1]
 
 
-class UpDown():
+class UpDown:
     """Enum for Up and Down."""
 
     U = 0  # Up
     D = 1  # Down
 
 
-class LeftRight():
+class LeftRight:
     """Enum for Left and Right."""
 
     L = 0
     R = 1
 
 
-class Orientation():
+class Orientation:
     """Enum for Orientation."""
 
     H = 0
@@ -54,10 +54,14 @@ def mir(dir):
         int: return mirror Direction.
     """
 
-    if dir == Dir.N: return Dir.S
-    if dir == Dir.E: return Dir.W
-    if dir == Dir.S: return Dir.N
-    if dir == Dir.W: return Dir.E
+    if dir == Dir.N:
+        return Dir.S
+    if dir == Dir.E:
+        return Dir.W
+    if dir == Dir.S:
+        return Dir.N
+    if dir == Dir.W:
+        return Dir.E
 
 
 BOARDSIZE = 8

@@ -2,7 +2,7 @@
 from game.helper import Player
 
 
-class Playerstate():
+class Playerstate:
     """State of Players, and their heuristic."""
 
     def __init__(self, p1_pos, p2_pos, p_now, h_p1, h_p2, oldstate=None):

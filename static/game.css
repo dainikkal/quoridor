@@ -10,29 +10,66 @@ td.Square.V a {
   padding-bottom: 16px;
 }
 
-td.Square.F a { padding: 16px;}
+td.Square.F a {
+  padding: 16px;
+}
 
-td.F.P1 a{ background-color: blue;}
-td.F.P2 a { background-color: red;}
+td.F.P1 a {
+  background-color: blue;
+}
+td.F.P2 a {
+  background-color: red;
+}
 
-td.F.Move:not(:hover) a { background-color: greenyellow;}
-td.F.Move:hover a { background-color: green;}
+td.F.GoodWinningMove:not(:hover) a {
+  background-color: green;
+}
+td.F.GoodWinningMove:hover a {
+  background-color: darkgreen;
+}
+td.F.WinningMove:not(:hover) a {
+  background-color: lightgreen;
+}
+td.F.WinningMove:hover a {
+  background-color: green;
+}
+td.F.GoodMove:not(:hover) a {
+  background-color: #fed8b1;
+}
+td.F.GoodMove:hover a {
+  background-color: orange;
+}
+td.F.Move:not(:hover) a {
+  background-color: #a95602;
+}
+td.F.Move:hover a {
+  background-color: #582d01;
+}
 
-td.Wall.set a { background-color: #393939;}
-td.Wall.open a { background-color: #A9A9A9;}
+td.Wall.set a {
+  background-color: #393939;
+}
+td.Wall.open a {
+  background-color: #a9a9a9;
+}
 
-td.Wall.H.setable:hover a, 
-td.Wall.V.setable:hover a, 
-td.Wall.open.hover a { background-color: #696969;}
+td.Wall.H.setable:hover a,
+td.Wall.V.setable:hover a,
+td.Wall.open.hover a {
+  background-color: #696969;
+}
 
+td.Wall.open.GoodWall a {
+  background-color: green;
+}
 
 p.p2info {
   font-size: larger;
   border: 2px solid red;
 }
-p.p2info.Current{
+p.p2info.Current {
   font-weight: bold;
-  border: 3px solid red
+  border: 3px solid red;
 }
 
 p.p1info {
@@ -41,5 +78,5 @@ p.p1info {
 }
 p.p1info.Current {
   font-weight: bold;
-  border: 3px solid blue
+  border: 3px solid blue;
 }

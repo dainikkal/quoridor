@@ -1,4 +1,4 @@
-from game.helper import BOARDSIZE, Dir, Orientation, Player
+from game.helper import BOARDSIZE, Dir, Orientation, Player, get_notation
 
 
 class WallHandler:
@@ -8,9 +8,17 @@ class WallHandler:
             (x, y, o): False
             for o in [Orientation.H, Orientation.V]
             for x in range(BOARDSIZE + 1)
-            for y in range(BOARDSIZE + 1)
             if (x != BOARDSIZE or o == Orientation.H)
-            and (y != BOARDSIZE or o == Orientation.V)
+            for y in range(BOARDSIZE + 1)
+            if (y != BOARDSIZE or o == Orientation.V)
+        }
+        self.wallpairs = {
+            (x, y, o): False
+            for o in [Orientation.H, Orientation.V]
+            for x in range(BOARDSIZE)
+            if (x != BOARDSIZE - 1 or o == Orientation.H)
+            for y in range(BOARDSIZE)
+            if (y != BOARDSIZE - 1 or o == Orientation.V)
         }
 
         self.wallcenter = {
@@ -22,6 +30,9 @@ class WallHandler:
 
     def setWall(self, x, y, o, val=True):
         self.walls[(x, y, o)] = val
+
+    def setWallPair(self, x, y, o, val=True):
+        self.wallpairs[(x, y, o)] = val
 
     def isWallSet(self, x, y, o):
         return self.walls[(x, y, o)]
@@ -75,3 +86,11 @@ class WallHandler:
 
     def setWallOnPath(self, x, y, o, p, val=True):
         self.wallsOnPath[(x, y, o, p)] = val
+
+    def getWallsAsStringKey(self):
+        key = ""
+
+        for x, y, o in self.wallpairs:
+            if self.wallpairs[x, y, o]:
+                key += get_notation(x, y, o)
+        return key

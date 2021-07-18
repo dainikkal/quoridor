@@ -17,12 +17,6 @@ from game.WallHandler import WallHandler
 counter = [0, 0]
 
 
-def printcounter():
-    global counter
-    print(counter)
-    counter = [0, 0]
-
-
 class Board:
     def __init__(self, p1_x=BOARDSIZEMID, p1_y=BOARDSIZE, p2_x=BOARDSIZEMID, p2_y=0):
         """Object that handles all the game logic."""
@@ -57,6 +51,7 @@ class Board:
             o (Orientation): Orientation of the wall
             val (bool): if the wall is to be set or unset
         """
+        self.wh.setWallPair(x, y, o, val)
         if o == Orientation.H:
             self.setHorizontalWall(x, y, val)
             self.setHorizontalWall(x + 1, y, val)
@@ -212,18 +207,6 @@ class Board:
             if d in [Dir.E, Dir.W]:
                 self.wh.setWallOnPath(nw_x, nw_y, Orientation.V, p)
         return path
-
-    ##########################################################################################################################
-    # DEBUG METHODS
-    ##########################################################################################################################
-
-    def debug_PrintInformation(self, myLambda, *args):
-        # TODO MOVE TO FIELDHANDLER
-        for y in range(BOARDSIZE + 1):
-            s = ""
-            for x in range(BOARDSIZE + 1):
-                s += str(myLambda(self.fh.fields[x][y], *args)) + " "
-            print(s)
 
     ##########################################################################################################################
     # CHECK SETABLE WALLS

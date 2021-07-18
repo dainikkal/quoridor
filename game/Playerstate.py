@@ -37,5 +37,20 @@ class Playerstate:
             return Playerstate(new_pos, None, Player.P2, new_h, None, state)
         return Playerstate(None, new_pos, Player.P1, None, new_h, state)
 
+    def getPositionPnow(self):
+        if self.p_now == Player.P1:
+            return self.p1_pos
+        return self.p2_pos
+
+    def getPositionPOther(self):
+        if self.p_now == Player.P1:
+            return self.p2_pos
+        return self.p1_pos
+
+    def getHeuristicCurrentPlayer(self):
+        if self.p_now == Player.P1:
+            return self.h_p1
+        return self.h_p2
+
 
 Playerstate.newPlayerstate = staticmethod(Playerstate.newPlayerstate)

@@ -1,7 +1,19 @@
 """Handles instance of a game."""
 from game.Playerstate import Playerstate
-from game.helper import BOARDSIZE, BOARDSIZEMID, Dir, Orientation, Player, mir
+from game.helper import (
+    BOARDSIZE,
+    BOARDSIZEMID,
+    Dir,
+    Orientation,
+    Player,
+    get_wallCount_key,
+    mir,
+    get_notation,
+    get_pos_key,
+    findWallkeyTranslation,
+)
 from game.Board import Board
+from map import cacheMap
 import random
 
 
@@ -11,6 +23,7 @@ class Game:
     def __init__(self, log="", random=False):
         """Initialize Game class."""
         self.b = Board()
+        # cacheMap = {}
         self.currentPlayer = Player.P1
         self.walls_left = [10, 10]
         self.p1_walls_left = 10
@@ -41,20 +54,21 @@ class Game:
         while self.redolog:
             self.call_redo()
 
+    def otherPlayer(self, p=None):
+        p = self.currentPlayer if p is None else p
+        return Player.P1 if p == Player.P2 else Player.P2
+
     def toggleplayer(self):
         """Change the current Player."""
-        self.currentPlayer = Player.P2 if self.currentPlayer == Player.P1 else Player.P1
+        self.currentPlayer = self.otherPlayer()
         self.update_classes()
 
-    def get_notation(self, x, y, o=None):
-        letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
-        if o == Orientation.H:
-            orientation = "h"
-        elif o == Orientation.V:
-            orientation = "v"
-        else:
-            orientation = ""
-        return letters[x] + str(y + 1) + orientation
+    def get_wallsCountLeft(self, p=None):
+        p = self.currentPlayer if None else p
+        if p == Player.P1:
+            return self.p1_walls_left
+        if p == Player.P2:
+            return self.p2_walls_left
 
     def get_move_from_notation(self, code):
         letters = {
@@ -93,9 +107,6 @@ class Game:
         self.random_vertical(random_pos, pos)
         self.random_horizontal(random_pos, pos)
         self.random_walls()
-        from game.Board import printcounter
-
-        printcounter()
         pass
 
     def random_prep(self, random_pos, pos):
@@ -213,21 +224,9 @@ class Game:
         self.move_player(d)
         self.toggleplayer()
 
-    def compute_winner_no_wall(self):
-
-        p1_x, p1_y = self.b.ph.getPos(Player.P1)
-        p2_x, p2_y = self.b.ph.getPos(Player.P2)
-        self.classes[self.calc_relative_field(p1_x, p1_y)] += " P1"
-        self.classes[self.calc_relative_field(p2_x, p2_y)] += " P2"
-
-        h_p1 = self.b.fh.getHeuristic(p1_x, p1_y, Player.P1)
-        h_p2 = self.b.fh.getHeuristic(p2_x, p2_y, Player.P2)
-        state = Playerstate((p1_x, p1_y), (p2_x, p2_y), self.currentPlayer, h_p1, h_p2)
-
-        self.b.compute_winner_no_wall(state)
-        pass
-
     def call_undo(self):
+        self.winner = Player.Empty
+
         p, move = self.prepare_undo()
         self.execute_undo(p, move)
 
@@ -243,6 +242,80 @@ class Game:
             move = last[1]
             self.gamelog.pop()
         return p, move
+
+    def find_best_move(self, wallkey, wallCountKey, state):
+        if not isinstance(state, Playerstate):
+            return
+
+        global cacheMap
+        winner = Player.Empty
+
+        # - Check if already been here.
+        cp = state.p_now
+        cpStr = str(cp)
+        posKey = get_pos_key(
+            state.p1_pos[0], state.p1_pos[1], state.p2_pos[0], state.p2_pos[1]
+        )
+
+        if posKey in cacheMap[wallkey][wallCountKey][cpStr]:
+            return cacheMap[wallkey][wallCountKey][cpStr][posKey]["winner"]
+        else:
+            cacheMap[wallkey][wallCountKey][cpStr][posKey] = {
+                "winner": Player.Empty,
+                "moves": [],
+            }
+
+        # - Check if cp wins
+        moves = self.b.getPlayerMoves(state)
+        moves.sort(key=lambda x: x[2])
+
+        min_h = moves[0][2]
+        good_moves = []
+
+        if min_h == 0:
+            for m in moves:
+                if m[2] <= min_h:
+                    good_moves.append(m)
+            cacheMap[wallkey][wallCountKey][cpStr][posKey]["moves"] = good_moves
+            cacheMap[wallkey][wallCountKey][cpStr][posKey]["winner"] = cp
+            return cp
+
+        # - Check options
+        for m in moves:
+            if m[2] > state.getHeuristicCurrentPlayer():
+                continue
+            w = self.find_best_move(wallkey, wallCountKey, m[3])
+
+            if w == cp:
+                good_moves.append(m)
+                winner = cp
+        winner = cp if winner == cp else self.otherPlayer(cp)
+
+        cacheMap[wallkey][wallCountKey][cpStr][posKey]["winner"] = winner
+        cacheMap[wallkey][wallCountKey][cpStr][posKey]["moves"] += good_moves
+        return winner
+
+    def wrapper_find_best_move(self):
+        global cacheMap
+        wallkey = self.b.wh.getWallsAsStringKey()
+        # wallkey, translation = findWallkeyTranslation(_wk)
+        if wallkey not in cacheMap:
+            cacheMap[wallkey] = {}
+
+        wallCountKey = get_wallCount_key(self.p1_walls_left, self.p2_walls_left)
+        if wallCountKey not in cacheMap[wallkey]:
+            cacheMap[wallkey][wallCountKey] = {}
+            cacheMap[wallkey][wallCountKey][str(Player.P1)] = {}
+            cacheMap[wallkey][wallCountKey][str(Player.P2)] = {}
+
+        p1_pos = self.find_pos(Player.P1)
+        p2_pos = self.find_pos(Player.P2)
+        p1_h = self.find_heuristic(p1_pos[0], p1_pos[1], Player.P1)
+        p2_h = self.find_heuristic(p2_pos[0], p2_pos[1], Player.P2)
+        state = Playerstate(p1_pos, p2_pos, self.currentPlayer, p1_h, p2_h)
+
+        w = self.find_best_move(wallkey, wallCountKey, state)
+        return w
 
     def execute_undo(self, p, move):
         """Undos action
@@ -290,7 +363,7 @@ class Game:
         action(*params)
 
         self.toggleplayer()
-        self.compute_winner_no_wall()
+        # self.compute_winner_no_wall()
 
     def move_player(self, d, d2=Dir.NoDir):
         """Moves player and check for win."""
@@ -298,15 +371,15 @@ class Game:
 
         turnnumber = len(self.gamelog)
         if self.currentPlayer == Player.P1:
-            x, y = self.b.ph.getPos(Player.P1)
-            action = self.get_notation(x, y, None)
+            x, y = self.find_pos(Player.P1)
+            action = get_notation(x, y, None)
             self.gamelog.append([turnnumber + 1, action, None])
-            h = self.b.fh.getHeuristic(x, y, Player.P1)
+            h = self.find_heuristic(x, y, Player.P1)
         else:
             turn = self.gamelog[turnnumber - 1]
-            x, y = self.b.ph.getPos(Player.P2)
-            turn[2] = self.get_notation(x, y, None)
-            h = self.b.fh.getHeuristic(x, y, Player.P2)
+            x, y = self.find_pos(Player.P2)
+            turn[2] = get_notation(x, y, None)
+            h = self.find_heuristic(x, y, Player.P2)
         if h == 0:
             self.winner = self.currentPlayer
 
@@ -318,7 +391,7 @@ class Game:
         self.b.setWall(x, y, o)
 
         turnnumber = len(self.gamelog)
-        action = self.get_notation(x, y, o)
+        action = get_notation(x, y, o)
         if self.currentPlayer == Player.P1:
             self.gamelog.append([turnnumber + 1, action, None])
         else:
@@ -336,6 +409,7 @@ class Game:
 
     def update_classes(self):
         """Updates the classes for html."""
+        self.wrapper_find_best_move()
         self.tasks.clear()
         for i in range(17 * 17):
             self.links[i] = ""
@@ -382,9 +456,10 @@ class Game:
                     x != 8
                     and self.b.isWallSetable(x, y, Orientation.H)
                     and self.currentplayer_walls_left() > 0
+                    and self.winner == Player.Empty
                 ):
                     val += " setable"
-                    code = self.get_notation(x, y, Orientation.H)
+                    code = get_notation(x, y, Orientation.H)
                     self.links[self.calc_relative_horizontal_wall(x, y)] = code
                     self.tasks[code] = [self.set_wall, [x, y, Orientation.H]]
 
@@ -407,9 +482,10 @@ class Game:
                     y != 8
                     and self.b.isWallSetable(x, y, Orientation.V)
                     and self.currentplayer_walls_left() > 0
+                    and self.winner == Player.Empty
                 ):
                     val += " setable"
-                    code = self.get_notation(x, y, Orientation.V)
+                    code = get_notation(x, y, Orientation.V)
                     self.links[self.calc_relative_vertical_wall(x, y)] = code
                     self.tasks[code] = [self.set_wall, [x, y, Orientation.V]]
 
@@ -423,23 +499,46 @@ class Game:
                     "Square F F" + str(x) + "-" + str(y)
                 )
 
-        p1_x, p1_y = self.b.ph.getPos(Player.P1)
-        p2_x, p2_y = self.b.ph.getPos(Player.P2)
+        p1_x, p1_y = self.find_pos(Player.P1)
+        p2_x, p2_y = self.find_pos(Player.P2)
         self.classes[self.calc_relative_field(p1_x, p1_y)] += " P1"
         self.classes[self.calc_relative_field(p2_x, p2_y)] += " P2"
 
-        h_p1 = self.b.fh.getHeuristic(p1_x, p1_y, Player.P1)
-        h_p2 = self.b.fh.getHeuristic(p2_x, p2_y, Player.P2)
+        if self.winner != Player.Empty:
+            return
+
+        h_p1 = self.find_heuristic(p1_x, p1_y, Player.P1)
+        h_p2 = self.find_heuristic(p2_x, p2_y, Player.P2)
         state = Playerstate((p1_x, p1_y), (p2_x, p2_y), self.currentPlayer, h_p1, h_p2)
 
-        for m in self.b.getPlayerMoves(state):
+        wallkey = self.b.wh.getWallsAsStringKey()
+        # wallkey, translation = findWallkeyTranslation(_wk)
+        cpStr = str(self.currentPlayer)
+        posKey = get_pos_key(p1_x, p1_y, p2_x, p2_y)
+        wallCountKey = get_wallCount_key(self.p1_walls_left, self.p2_walls_left)
+        goodmoves = cacheMap[wallkey][wallCountKey][cpStr][posKey]["moves"]
+
+        moves = self.b.getPlayerMoves(state)
+        moves.sort(key=lambda x: x[2])
+        min_h = moves[0][2]
+        for m in moves:
             x, y = m[3].p1_pos if self.currentPlayer == Player.P1 else m[3].p2_pos
 
             pos_relative = self.calc_relative_field(x, y)
 
-            move_code = self.get_notation(x, y)
+            move_code = get_notation(x, y)
+            gmove = self.inMoves(m, goodmoves)
+            bettermove = m[2] == min_h
 
-            self.classes[pos_relative] += " Move "
+            if (gmove and bettermove) or m[2] == 0:
+                self.classes[pos_relative] += " GoodWinningMove "
+            if gmove and not bettermove:
+                self.classes[pos_relative] += " WinningMove "
+            if not gmove and bettermove:
+                self.classes[pos_relative] += " GoodMove "
+            if not gmove and not bettermove:
+                self.classes[pos_relative] += " Move "
+
             self.classes[pos_relative] += move_code
             self.links[pos_relative] = move_code
             self.tasks[move_code] = [self.move_player, [m[0], m[1]]]
@@ -482,3 +581,20 @@ class Game:
 
     def get_p2_wallsCount(self):
         return self.p2_walls_left
+
+    def find_heuristic(self, x, y, p):
+        if p == Player.Empty:
+            p = self.currentPlayer
+        return self.b.fh.getHeuristic(x, y, p)
+
+    def find_pos(self, p):
+        if p == Player.Empty:
+            p = self.currentPlayer
+        return self.b.ph.getPos(p)
+
+    def inMoves(self, m, moves):
+        for move in moves:
+            if m[0:2] == move[0:2]:
+                return True
+
+        return False

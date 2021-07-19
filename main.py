@@ -4,6 +4,10 @@ from game.Game import Game
 from game.helper import *
 from datetime import datetime, timedelta
 import os
+import redis
+
+redis_url = os.getenv("REDISTOGO_URL", "redis://localhost:6379")
+redis = redis.from_url(redis_url)
 
 app = Flask(__name__)
 
@@ -28,6 +32,7 @@ def futuretimestamp(x):
 
 @app.before_request
 def before_request():
+    print(games.keys())
     """before_request updates session information taken before request."""
     if "gameid" not in session or session["gameid"] not in games.keys():
         session["gameid"] = os.urandom(16)

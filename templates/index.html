@@ -24,7 +24,9 @@
 
   -->
   <tr>
-    <td class="Button Clickable"><a href="/reset">reset game </a></td>
+    <td class="Button Clickable">
+      <a href="/reset">reset game </a>
+    </td>
   </tr>
   <tr>
     <td class="Button {{clickables[0]}}">
@@ -35,9 +37,6 @@
     <td class="Button {{clickables[1]}}">
       <a {{buttonhrefs[1]}}>redo move </a>
     </td>
-  </tr>
-  <tr>
-    <td class="Button Unclickable"><a href="/random">randomize game </a></td>
   </tr>
   <tr>
     <td class="Button Clickable {{actives[0]}}">
@@ -52,15 +51,17 @@
   <tr>
     <td class="Button Clickable {{actives[2]}}">
       <a href="/togglep2">toggle AI P2 </a>
+      <span class="tooltiptext">
     </td>
   </tr>
   <tr>
-    <td class="Button Clickable"><a href="/random">randomize game </a></td>
+    <td class="Button Clickable">
+      <a href="/random">randomize game </a>
+    </td>
   </tr>
   <tr>
     <td class="Button Clickable">
       <a
-        a
         href="javascript:;"
         onclick="this.href='\load?log=' + document.getElementById('ta_log').value"
       >
@@ -77,4 +78,4 @@
     </td>
   </tr>
 </table>
-{% endblock rightblock %}
+{% endblock rightblock %} {% block infoblock%} <div class="infobox"> </div>{% endblock infoblock%}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %} {% block winmessage%} {% if winner == 0%}
-<h1>Player 1 won</h1>
+<h1 class="P1Win">Player 1 won</h1>
 {% elif winner == 1%}
-<h1>Player 2 won</h1>
+<h1 class="P2Win">Player 2 won</h1>
 {% endif %} {% endblock winmessage%} {% block leftblock %}
 <table>
   <tr>
@@ -40,13 +40,19 @@
     <td class="Button Unclickable"><a href="/random">randomize game </a></td>
   </tr>
   <tr>
-    <td class="Button Unclickable"><a href="/togglehelp">toggle help </a></td>
+    <td class="Button Clickable {{actives[0]}}">
+      <a href="/togglehelp">toggle help </a>
+    </td>
   </tr>
   <tr>
-    <td class="Button Unclickable"><a href="/togglep1">toggle AI P1 </a></td>
+    <td class="Button Clickable {{actives[1]}}">
+      <a href="/togglep1">toggle AI P1 </a>
+    </td>
   </tr>
   <tr>
-    <td class="Button Unclickable"><a href="/togglep2">toggle AI P2 </a></td>
+    <td class="Button Clickable {{actives[2]}}">
+      <a href="/togglep2">toggle AI P2 </a>
+    </td>
   </tr>
   <tr>
     <td class="Button Clickable"><a href="/random">randomize game </a></td>

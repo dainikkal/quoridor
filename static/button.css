@@ -1,18 +1,25 @@
 td.Button a {
-    display: block;
-    padding: 6px;
-    border: 1px solid black;
-    overflow: hidden;
-    text-decoration: none;
-    color: #000000;
-    text-align: center;
+  display: block;
+  padding: 6px;
+  border: 1px solid black;
+  overflow: hidden;
+  text-decoration: none;
+  color: #000000;
+  text-align: center;
 }
 
+td.Button.Active a {
+  background-color: lightgreen;
+}
+
+td.Button.Inactive a {
+  background-color: #ff9a98;
+}
 
 td.Button.Unclickable a {
-    color: #A9A9A9;
+  color: #a9a9a9;
 }
 
 td.Button.Clickable:hover a {
-    background-color: #A9A9A9;
+  background-color: #a9a9a9;
 }

@@ -91,6 +91,8 @@ class FieldHandler:
                     repeatCount = len(self.disconnected[p])
                 prevDisconnects = tmpDisconnects
 
+            tmpDisconnects.sort()
+
             s_h, (s_x, s_y) = tmpDisconnects[0]
             self.disconnected[p] = tmpDisconnects[1:]
             self.setNextToShortest(s_x, s_y, p, s_h)

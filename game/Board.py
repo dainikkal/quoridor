@@ -1,3 +1,4 @@
+from os import stat
 from game.Playerstate import Playerstate
 from game.Path import Path
 from game.PlayerHandler import PlayerHandler
@@ -125,9 +126,11 @@ class Board:
         Returns:
             List: List of tuple(Direction, direction in case of a jump, heuristic of new place, state after the move)
         """
+        if not isinstance(state, Playerstate):
+            raise
         p = state.p_now
-        x, y = state.p1_pos if p == Player.P1 else state.p2_pos
-        other_pos = state.p2_pos if p == Player.P1 else state.p1_pos
+        x, y = state.getPositionPnow()
+        other_pos = state.getPositionPOther()
 
         moves = []
         for d in [Dir.N, Dir.E, Dir.S, Dir.W]:

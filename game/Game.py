@@ -30,6 +30,9 @@ class Game:
         self.links = {}
         self.tasks = {}
         self.winner = Player.Empty
+        self.helpactive = False
+        self.autoplay = [False, False]
+        self.bestmove = ""
         self.update_classes()
         self.redolog = []
         self.gamelog = []
@@ -237,7 +240,7 @@ class Game:
 
     def find_best_move(self, wallkey, wallCountKey, state):
         if not isinstance(state, Playerstate):
-            return
+            raise
 
         global cacheMap
         winner = Player.Empty
@@ -358,7 +361,13 @@ class Game:
         action(*params)
 
         self.toggleplayer(update=True)
+
+        if self.autoplay[self.currentPlayer] and redo == False:
+            self.playautomatically()
         # self.compute_winner_no_wall()
+
+    def playautomatically(self):
+        self.execute_action(self.bestmove)
 
     def move_player(self, d, d2=Dir.NoDir):
         """Moves player and check for win."""
@@ -404,6 +413,7 @@ class Game:
 
     def update_classes(self):
         """Updates the classes for html."""
+        self.bestmove = ""
         self.wrapper_find_best_move()
         self.tasks.clear()
         for i in range(17 * 17):
@@ -515,6 +525,7 @@ class Game:
         moves = self.b.getPlayerMoves(state)
         moves.sort(key=lambda x: x[2])
         min_h = moves[0][2]
+        bestmovetier = 0
         for m in moves:
             x, y = m[3].p1_pos if self.currentPlayer == Player.P1 else m[3].p2_pos
 
@@ -524,13 +535,32 @@ class Game:
             gmove = self.inMoves(m, goodmoves)
             bettermove = m[2] == min_h
 
-            if (gmove and bettermove) or m[2] == 0:
-                self.classes[pos_relative] += " GoodWinningMove "
-            if gmove and not bettermove:
-                self.classes[pos_relative] += " WinningMove "
-            if not gmove and bettermove:
-                self.classes[pos_relative] += " GoodMove "
-            if not gmove and not bettermove:
+            if ((gmove and bettermove) or m[2] == 0) and bestmovetier < 4:
+                self.bestmove = move_code
+                bestmovetier = 4
+
+            if ((gmove and not bettermove) or m[2] == 0) and bestmovetier < 3:
+                self.bestmove = move_code
+                bestmovetier = 3
+
+            if ((not gmove and bettermove) or m[2] == 0) and bestmovetier < 2:
+                self.bestmove = move_code
+                bestmovetier = 2
+
+            if ((not gmove and not bettermove) or m[2] == 0) and bestmovetier < 1:
+                self.bestmove = move_code
+                bestmovetier = 1
+
+            if self.helpactive:
+                if (gmove and bettermove) or m[2] == 0:
+                    self.classes[pos_relative] += " GoodWinningMove "
+                if gmove and not bettermove:
+                    self.classes[pos_relative] += " WinningMove "
+                if not gmove and bettermove:
+                    self.classes[pos_relative] += " GoodMove "
+                if not gmove and not bettermove:
+                    self.classes[pos_relative] += " Move "
+            else:
                 self.classes[pos_relative] += " Move "
 
             self.classes[pos_relative] += move_code
@@ -592,3 +622,28 @@ class Game:
                 return True
 
         return False
+
+    def toggleHelp(self):
+        self.helpactive = not self.helpactive
+        self.update_classes()
+
+    def get_helpactive(self):
+        return self.helpactive
+
+    def toggleAutoP1(self):
+        self.autoplay[Player.P1] = not self.autoplay[Player.P1]
+        self.update_classes()
+        if self.autoplay[self.currentPlayer]:
+            self.playautomatically()
+
+    def get_autop1(self):
+        return self.autoplay[Player.P1]
+
+    def toggleAutoP2(self):
+        self.autoplay[Player.P2] = not self.autoplay[Player.P2]
+        self.update_classes()
+        if self.autoplay[self.currentPlayer]:
+            self.playautomatically()
+
+    def get_autop2(self):
+        return self.autoplay[Player.P2]

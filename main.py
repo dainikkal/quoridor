@@ -69,6 +69,12 @@ def action(command):
         games[session["gameid"]] = Game(log=request.args.get("log"))
     elif command == "random":
         games[session["gameid"]] = Game(random=True)
+    elif command == "togglehelp":
+        games[session["gameid"]].toggleHelp()
+    elif command == "togglep1":
+        games[session["gameid"]].toggleAutoP1()
+    elif command == "togglep2":
+        games[session["gameid"]].toggleAutoP2()
     else:
         games[session["gameid"]].execute_action(command)
     return redirect(url_for("home"))
@@ -85,14 +91,18 @@ def home():
     links = games[session["gameid"]].get_links()
     winner = games[session["gameid"]].get_winner()
     log_text = games[session["gameid"]].get_gamelog()
-    clickables = ["Clickable", "Unclickable"]
-    buttonhrefs = ["href=/undo", "href=/redo"]
+    clickables = ["Clickable", "Unclickable", "Clickable"]
+    buttonhrefs = ["href=/undo", "href=/redo", "href=/togglehelp"]
+    actives = ["Inactive", "Inactive", "Inactive"]
     clickables[0] = (
         "Clickable" if games[session["gameid"]].get_undoable() else "Unclickable"
     )
     clickables[1] = (
         "Clickable" if games[session["gameid"]].get_redoable() else "Unclickable"
     )
+    actives[0] = "Active" if games[session["gameid"]].get_helpactive() else "Inactive"
+    actives[1] = "Active" if games[session["gameid"]].get_autop1() else "Inactive"
+    actives[2] = "Active" if games[session["gameid"]].get_autop2() else "Inactive"
 
     hrefs = [
         buttonhrefs[i] if clickables[i] == "Clickable" else ""
@@ -122,6 +132,7 @@ def home():
         p1ai=p1ai,
         p2ai=p2ai,
         currentplayer=playerstatus,
+        actives=actives,
     )
 
 

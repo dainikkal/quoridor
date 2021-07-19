@@ -1,20 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-  <title>Quoridor</title>
-  <script src="{{url_for('static', filename='jquery-3.5.1.min.js')}}"></script>
-  <script src="{{url_for('static', filename='hover.js')}}"></script>
-  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='game.css')}}">
-  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='button.css')}}">
-  <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}">
-</head>
-<body>
-  {% block winmessage %}{% endblock winmessage %}
-  <table>
-  <tr>
-  <td><div class="left"> {% block leftblock %}{% endblock leftblock %} </div></td>
-  <td><div class="right"> {% block rightblock %}{% endblock rightblock %} </div></td>
-  </tr>
-  </table>
-</body>
+  <head>
+    <title>Quoridor</title>
+    <script src="{{url_for('static', filename='jquery-3.5.1.min.js')}}"></script>
+    <script src="{{url_for('static', filename='hover.js')}}"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{url_for('static', filename='game.css')}}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{url_for('static', filename='button.css')}}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{url_for('static', filename='style.css')}}"
+    />
+  </head>
+  <body>
+    <table>
+      <tr>
+        <td>
+          <div class="left">{% block leftblock %}{% endblock leftblock %}</div>
+        </td>
+        <td>
+          <div class="right">
+            {% block rightblock %}{% endblock rightblock %}
+          </div>
+        </td>
+      </tr>
+    </table>
+    {% block winmessage %}{% endblock winmessage %}
+  </body>
 </html>

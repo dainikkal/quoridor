@@ -49,7 +49,7 @@ class Game:
             if len(parts) < 2:
                 continue
             self.redolog.append(parts[1])
-            if len(parts) == 3:
+            if len(parts) >= 3:
                 self.redolog.append(parts[2])
         self.redolog.reverse()
         while self.redolog:
@@ -82,7 +82,7 @@ class Game:
             "i": 8,
         }
         x = letters[code[0]]
-        y = int(code[1]) - 1
+        y = BOARDSIZE + 1 - int(code[1])
         if len(code) == 2:
             o = None
         elif "v" == code[2]:

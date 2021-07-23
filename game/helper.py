@@ -81,7 +81,8 @@ def get_notation(x, y, o=None):
         orientation = "v"
     else:
         orientation = ""
-    return letters[x] + str(BOARDSIZE + 1 - y) + orientation
+    number = BOARDSIZE - y + (1 if o == None else 0)
+    return letters[x] + str(number) + orientation
 
 
 def get_pos_key(x1, y1, x2, y2):

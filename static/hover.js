@@ -72,6 +72,15 @@ $(function() {
   $(".H.setable.Hpiece7-6").hover(function() {$(document).find(".H7-6").addClass("hover");}, function() {$(document).find(".H7-6").removeClass("hover");});
   $(".H.setable.Hpiece7-7").hover(function() {$(document).find(".H7-7").addClass("hover");}, function() {$(document).find(".H7-7").removeClass("hover");});
 
+  $(".H.setable.Hpiece8-0").hover(function() {$(document).find(".H7-0").addClass("hover");}, function() {$(document).find(".H7-0").removeClass("hover");});
+  $(".H.setable.Hpiece8-1").hover(function() {$(document).find(".H7-1").addClass("hover");}, function() {$(document).find(".H7-1").removeClass("hover");});
+  $(".H.setable.Hpiece8-2").hover(function() {$(document).find(".H7-2").addClass("hover");}, function() {$(document).find(".H7-2").removeClass("hover");});
+  $(".H.setable.Hpiece8-3").hover(function() {$(document).find(".H7-3").addClass("hover");}, function() {$(document).find(".H7-3").removeClass("hover");});
+  $(".H.setable.Hpiece8-4").hover(function() {$(document).find(".H7-4").addClass("hover");}, function() {$(document).find(".H7-4").removeClass("hover");});
+  $(".H.setable.Hpiece8-5").hover(function() {$(document).find(".H7-5").addClass("hover");}, function() {$(document).find(".H7-5").removeClass("hover");});
+  $(".H.setable.Hpiece8-6").hover(function() {$(document).find(".H7-6").addClass("hover");}, function() {$(document).find(".H7-6").removeClass("hover");});
+  $(".H.setable.Hpiece8-7").hover(function() {$(document).find(".H7-7").addClass("hover");}, function() {$(document).find(".H7-7").removeClass("hover");});
+
   $(".V.setable.Vpiece0-0").hover(function() {$(document).find(".V0-0").addClass("hover");}, function() {$(document).find(".V0-0").removeClass("hover");});
   $(".V.setable.Vpiece0-1").hover(function() {$(document).find(".V0-1").addClass("hover");}, function() {$(document).find(".V0-1").removeClass("hover");});
   $(".V.setable.Vpiece0-2").hover(function() {$(document).find(".V0-2").addClass("hover");}, function() {$(document).find(".V0-2").removeClass("hover");});
@@ -80,6 +89,7 @@ $(function() {
   $(".V.setable.Vpiece0-5").hover(function() {$(document).find(".V0-5").addClass("hover");}, function() {$(document).find(".V0-5").removeClass("hover");});
   $(".V.setable.Vpiece0-6").hover(function() {$(document).find(".V0-6").addClass("hover");}, function() {$(document).find(".V0-6").removeClass("hover");});
   $(".V.setable.Vpiece0-7").hover(function() {$(document).find(".V0-7").addClass("hover");}, function() {$(document).find(".V0-7").removeClass("hover");});
+  $(".V.setable.Vpiece0-8").hover(function() {$(document).find(".V0-7").addClass("hover");}, function() {$(document).find(".V0-7").removeClass("hover");});
 
   $(".V.setable.Vpiece1-0").hover(function() {$(document).find(".V1-0").addClass("hover");}, function() {$(document).find(".V1-0").removeClass("hover");});
   $(".V.setable.Vpiece1-1").hover(function() {$(document).find(".V1-1").addClass("hover");}, function() {$(document).find(".V1-1").removeClass("hover");});
@@ -89,6 +99,7 @@ $(function() {
   $(".V.setable.Vpiece1-5").hover(function() {$(document).find(".V1-5").addClass("hover");}, function() {$(document).find(".V1-5").removeClass("hover");});
   $(".V.setable.Vpiece1-6").hover(function() {$(document).find(".V1-6").addClass("hover");}, function() {$(document).find(".V1-6").removeClass("hover");});
   $(".V.setable.Vpiece1-7").hover(function() {$(document).find(".V1-7").addClass("hover");}, function() {$(document).find(".V1-7").removeClass("hover");});
+  $(".V.setable.Vpiece1-8").hover(function() {$(document).find(".V1-7").addClass("hover");}, function() {$(document).find(".V1-7").removeClass("hover");});
 
   $(".V.setable.Vpiece2-0").hover(function() {$(document).find(".V2-0").addClass("hover");}, function() {$(document).find(".V2-0").removeClass("hover");});
   $(".V.setable.Vpiece2-1").hover(function() {$(document).find(".V2-1").addClass("hover");}, function() {$(document).find(".V2-1").removeClass("hover");});
@@ -98,6 +109,7 @@ $(function() {
   $(".V.setable.Vpiece2-5").hover(function() {$(document).find(".V2-5").addClass("hover");}, function() {$(document).find(".V2-5").removeClass("hover");});
   $(".V.setable.Vpiece2-6").hover(function() {$(document).find(".V2-6").addClass("hover");}, function() {$(document).find(".V2-6").removeClass("hover");});
   $(".V.setable.Vpiece2-7").hover(function() {$(document).find(".V2-7").addClass("hover");}, function() {$(document).find(".V2-7").removeClass("hover");});
+  $(".V.setable.Vpiece2-8").hover(function() {$(document).find(".V2-7").addClass("hover");}, function() {$(document).find(".V2-7").removeClass("hover");});
 
   $(".V.setable.Vpiece3-0").hover(function() {$(document).find(".V3-0").addClass("hover");}, function() {$(document).find(".V3-0").removeClass("hover");});
   $(".V.setable.Vpiece3-1").hover(function() {$(document).find(".V3-1").addClass("hover");}, function() {$(document).find(".V3-1").removeClass("hover");});
@@ -107,6 +119,7 @@ $(function() {
   $(".V.setable.Vpiece3-5").hover(function() {$(document).find(".V3-5").addClass("hover");}, function() {$(document).find(".V3-5").removeClass("hover");});
   $(".V.setable.Vpiece3-6").hover(function() {$(document).find(".V3-6").addClass("hover");}, function() {$(document).find(".V3-6").removeClass("hover");});
   $(".V.setable.Vpiece3-7").hover(function() {$(document).find(".V3-7").addClass("hover");}, function() {$(document).find(".V3-7").removeClass("hover");});
+  $(".V.setable.Vpiece3-8").hover(function() {$(document).find(".V3-7").addClass("hover");}, function() {$(document).find(".V3-7").removeClass("hover");});
 
   $(".V.setable.Vpiece4-0").hover(function() {$(document).find(".V4-0").addClass("hover");}, function() {$(document).find(".V4-0").removeClass("hover");});
   $(".V.setable.Vpiece4-1").hover(function() {$(document).find(".V4-1").addClass("hover");}, function() {$(document).find(".V4-1").removeClass("hover");});
@@ -115,7 +128,8 @@ $(function() {
   $(".V.setable.Vpiece4-4").hover(function() {$(document).find(".V4-4").addClass("hover");}, function() {$(document).find(".V4-4").removeClass("hover");});
   $(".V.setable.Vpiece4-5").hover(function() {$(document).find(".V4-5").addClass("hover");}, function() {$(document).find(".V4-5").removeClass("hover");});
   $(".V.setable.Vpiece4-6").hover(function() {$(document).find(".V4-6").addClass("hover");}, function() {$(document).find(".V4-6").removeClass("hover");});
-  $(".V.setable.Vpiece4-7").hover(function() {$(document).find(".V4-7").addClass("hover");}, function() {$(document).find(".V4-7").removeClass("hover");});
+  $(".V.setable.Vpiece3-7").hover(function() {$(document).find(".V3-7").addClass("hover");}, function() {$(document).find(".V3-7").removeClass("hover");});
+  $(".V.setable.Vpiece3-8").hover(function() {$(document).find(".V3-7").addClass("hover");}, function() {$(document).find(".V3-7").removeClass("hover");});
 
   $(".V.setable.Vpiece5-0").hover(function() {$(document).find(".V5-0").addClass("hover");}, function() {$(document).find(".V5-0").removeClass("hover");});
   $(".V.setable.Vpiece5-1").hover(function() {$(document).find(".V5-1").addClass("hover");}, function() {$(document).find(".V5-1").removeClass("hover");});
@@ -125,6 +139,7 @@ $(function() {
   $(".V.setable.Vpiece5-5").hover(function() {$(document).find(".V5-5").addClass("hover");}, function() {$(document).find(".V5-5").removeClass("hover");});
   $(".V.setable.Vpiece5-6").hover(function() {$(document).find(".V5-6").addClass("hover");}, function() {$(document).find(".V5-6").removeClass("hover");});
   $(".V.setable.Vpiece5-7").hover(function() {$(document).find(".V5-7").addClass("hover");}, function() {$(document).find(".V5-7").removeClass("hover");});
+  $(".V.setable.Vpiece5-8").hover(function() {$(document).find(".V5-7").addClass("hover");}, function() {$(document).find(".V5-7").removeClass("hover");});
 
   $(".V.setable.Vpiece6-0").hover(function() {$(document).find(".V6-0").addClass("hover");}, function() {$(document).find(".V6-0").removeClass("hover");});
   $(".V.setable.Vpiece6-1").hover(function() {$(document).find(".V6-1").addClass("hover");}, function() {$(document).find(".V6-1").removeClass("hover");});
@@ -134,6 +149,7 @@ $(function() {
   $(".V.setable.Vpiece6-5").hover(function() {$(document).find(".V6-5").addClass("hover");}, function() {$(document).find(".V6-5").removeClass("hover");});
   $(".V.setable.Vpiece6-6").hover(function() {$(document).find(".V6-6").addClass("hover");}, function() {$(document).find(".V6-6").removeClass("hover");});
   $(".V.setable.Vpiece6-7").hover(function() {$(document).find(".V6-7").addClass("hover");}, function() {$(document).find(".V6-7").removeClass("hover");});
+  $(".V.setable.Vpiece6-8").hover(function() {$(document).find(".V6-7").addClass("hover");}, function() {$(document).find(".V6-7").removeClass("hover");});
 
   $(".V.setable.Vpiece7-0").hover(function() {$(document).find(".V7-0").addClass("hover");}, function() {$(document).find(".V7-0").removeClass("hover");});
   $(".V.setable.Vpiece7-1").hover(function() {$(document).find(".V7-1").addClass("hover");}, function() {$(document).find(".V7-1").removeClass("hover");});
@@ -143,4 +159,5 @@ $(function() {
   $(".V.setable.Vpiece7-5").hover(function() {$(document).find(".V7-5").addClass("hover");}, function() {$(document).find(".V7-5").removeClass("hover");});
   $(".V.setable.Vpiece7-6").hover(function() {$(document).find(".V7-6").addClass("hover");}, function() {$(document).find(".V7-6").removeClass("hover");});
   $(".V.setable.Vpiece7-7").hover(function() {$(document).find(".V7-7").addClass("hover");}, function() {$(document).find(".V7-7").removeClass("hover");});
+  $(".V.setable.Vpiece7-8").hover(function() {$(document).find(".V7-7").addClass("hover");}, function() {$(document).find(".V7-7").removeClass("hover");});
 });

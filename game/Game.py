@@ -468,6 +468,16 @@ class Game:
                     self.links[self.calc_relative_horizontal_wall(x, y)] = code
                     self.tasks[code] = [self.set_wall, [x, y, Orientation.H]]
 
+                if x == 8:
+                    if (
+                        self.b.isWallSetable(x - 1, y, Orientation.H)
+                        and self.currentplayer_walls_left() > 0
+                        and self.winner == Player.Empty
+                    ):
+                        val += " setable"
+                        code = get_notation(x - 1, y, Orientation.H)
+                        self.links[self.calc_relative_horizontal_wall(x - 1, y)] = code
+
                 self.classes[self.calc_relative_horizontal_wall(x, y)] = val
 
     def update_vertical_walls_to_classes(self):
@@ -493,6 +503,17 @@ class Game:
                     code = get_notation(x, y, Orientation.V)
                     self.links[self.calc_relative_vertical_wall(x, y)] = code
                     self.tasks[code] = [self.set_wall, [x, y, Orientation.V]]
+
+                if y == 8:
+
+                    if (
+                        self.b.isWallSetable(x, y - 1, Orientation.V)
+                        and self.currentplayer_walls_left() > 0
+                        and self.winner == Player.Empty
+                    ):
+                        val += " setable"
+                        code = get_notation(x, y - 1, Orientation.V)
+                        self.links[self.calc_relative_vertical_wall(x, y - 1)] = code
 
                 self.classes[self.calc_relative_vertical_wall(x, y)] = val
 

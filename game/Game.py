@@ -4,8 +4,6 @@ from game.helper import (
     BOARDSIZE,
     BOARDSIZEMID,
     Dir,
-    INFINITE,
-    MINUSINFINITE,
     Orientation,
     Player,
     get_wallCount_key,
@@ -19,7 +17,7 @@ from map import cacheMap
 import random
 
 
-intend = ""
+# intend = ""
 
 
 class Game:
@@ -286,58 +284,58 @@ class Game:
             return cp
 
         # - Check options
-        global intend
-
-        def p_print(p):
-            if p == Player.P1:
-                return "\033[94m" + "P1" + "\033[0m"
-            return "\033[91m" + "P2" + "\033[0m"
-
-        def dir_print(p):
-            if p == Dir.N:
-                return "\033[91m" + "N" + "\033[0m"
-            if p == Dir.S:
-                return "\033[92m" + "S" + "\033[0m"
-            if p == Dir.E:
-                return "\033[93m" + "E" + "\033[0m"
-            if p == Dir.W:
-                return "\033[94m" + "W" + "\033[0m"
-            return ""
-
-        def codeinit(code, init):
-            if init == 2:
-                return "\033[92m" + code + "\033[0m"
-            if init == 1:
-                return "\033[93m" + code + "\033[0m"
-            return code        
+        #        global intend
+        #
+        #        def p_print(p):
+        #            if p == Player.P1:
+        #                return "\033[94m" + "P1" + "\033[0m"
+        #            return "\033[91m" + "P2" + "\033[0m"
+        #
+        #        def dir_print(p):
+        #            if p == Dir.N:
+        #                return "\033[91m" + "N" + "\033[0m"
+        #            if p == Dir.S:
+        #                return "\033[92m" + "S" + "\033[0m"
+        #            if p == Dir.E:
+        #                return "\033[93m" + "E" + "\033[0m"
+        #            if p == Dir.W:
+        #                return "\033[94m" + "W" + "\033[0m"
+        #            return ""
+        #
+        #        def codeinit(code, init):
+        #            if init == 2:
+        #                return "\033[92m" + code + "\033[0m"
+        #            if init == 1:
+        #                return "\033[93m" + code + "\033[0m"
+        #            return code
 
         for h_dif, m in sortedmoves:
             w = Player.Empty
             if m[2] > state.getHeuristicCurrentPlayer():
                 continue
-            intend += "  "
-            print(
-                intend
-                + p_print(cp)
-                + " "
-                + dir_print(m[0])
-                + " "
-                + dir_print(m[1])
-                + " "
-                + codeinit(posKey, init)
-                + " "
-                + "\033[96m"
-                + str(m[2])
-                + "\033[0m"
-                + " "
-                + "\033[97m"
-                + str(h_dif)
-                + "\033[0m"
-            )
+            # intend += "  "
+            # print(
+            #    intend
+            #    + p_print(cp)
+            #    + " "
+            #    + dir_print(m[0])
+            #    + " "
+            #    + dir_print(m[1])
+            #    + " "
+            #    + codeinit(posKey, init)
+            #    + " "
+            #    + "\033[96m"
+            #    + str(m[2])
+            #    + "\033[0m"
+            #    + " "
+            #    + "\033[97m"
+            #    + str(h_dif)
+            #    + "\033[0m"
+            # )
             if init == 2:
                 w = self.find_best_move(wallkey, wallCountKey, m[3], 1)
             elif h_dif < sortedmoves[0][0]:
-                intend = intend[:-2]
+                # intend = intend[:-2]
                 continue
             elif -1 < h_dif and h_dif < 2:
                 w = self.find_best_move(wallkey, wallCountKey, m[3])
@@ -349,7 +347,7 @@ class Game:
             if w == cp:
                 good_moves.append((h_dif, m))
                 winner = cp
-            intend = intend[:-2]
+            # intend = intend[:-2]
 
         good_moves.sort()
 

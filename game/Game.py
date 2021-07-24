@@ -4,6 +4,8 @@ from game.helper import (
     BOARDSIZE,
     BOARDSIZEMID,
     Dir,
+    INFINITE,
+    MINUSINFINITE,
     Orientation,
     Player,
     get_wallCount_key,
@@ -15,6 +17,9 @@ from game.helper import (
 from game.Board import Board
 from map import cacheMap
 import random
+
+
+intend = ""
 
 
 class Game:
@@ -30,7 +35,7 @@ class Game:
         self.links = {}
         self.tasks = {}
         self.winner = Player.Empty
-        self.helpactive = False
+        self.helpactive = True
         self.autoplay = [False, False]
         self.bestmove = ""
         self.update_classes()
@@ -82,13 +87,13 @@ class Game:
             "i": 8,
         }
         x = letters[code[0]]
-        y = BOARDSIZE + 1 - int(code[1])
         if len(code) == 2:
             o = None
         elif "v" == code[2]:
             o = Orientation.V
         elif "h" == code[2]:
             o = Orientation.H
+        y = BOARDSIZE - int(code[1]) + (1 if o == None else 0)
         return x, y, o
 
     def randomize(self):
@@ -238,7 +243,7 @@ class Game:
             self.gamelog.pop()
         return p, move
 
-    def find_best_move(self, wallkey, wallCountKey, state):
+    def find_best_move(self, wallkey, wallCountKey, state, init=0):
         if not isinstance(state, Playerstate):
             raise
 
@@ -256,7 +261,8 @@ class Game:
         )
 
         if posKey in cacheMap[wallkey][wallCountKey][cpStr]:
-            return cacheMap[wallkey][wallCountKey][cpStr][posKey]["winner"]
+            if init == 0:
+                return cacheMap[wallkey][wallCountKey][cpStr][posKey]["winner"]
         else:
             cacheMap[wallkey][wallCountKey][cpStr][posKey] = {
                 "winner": Player.Empty,
@@ -265,34 +271,105 @@ class Game:
 
         # - Check if cp wins
         moves = self.b.getPlayerMoves(state)
-        moves.sort(key=lambda x: x[2])
+        hdifs = [self.get_HeursiticDiff(state, x[3]) for x in moves]
+        sortedmoves = sorted(zip(hdifs, moves), reverse=True)
 
-        min_h = moves[0][2]
+        min_h = sortedmoves[0][1][2]
         good_moves = []
 
         if min_h == 0:
-            for m in moves:
-                if m[2] <= min_h:
-                    good_moves.append(m)
+            for _, m in sortedmoves:
+                if m[2] == 0:
+                    good_moves.append([0, m])
             cacheMap[wallkey][wallCountKey][cpStr][posKey]["moves"] = good_moves
             cacheMap[wallkey][wallCountKey][cpStr][posKey]["winner"] = cp
             return cp
 
         # - Check options
-        for m in moves:
+        global intend
+
+        def p_print(p):
+            if p == Player.P1:
+                return "\033[94m" + "P1" + "\033[0m"
+            return "\033[91m" + "P2" + "\033[0m"
+
+        def dir_print(p):
+            if p == Dir.N:
+                return "\033[91m" + "N" + "\033[0m"
+            if p == Dir.S:
+                return "\033[92m" + "S" + "\033[0m"
+            if p == Dir.E:
+                return "\033[93m" + "E" + "\033[0m"
+            if p == Dir.W:
+                return "\033[94m" + "W" + "\033[0m"
+            return ""
+
+        def codeinit(code, init):
+            if init == 2:
+                return "\033[92m" + code + "\033[0m"
+            if init == 1:
+                return "\033[93m" + code + "\033[0m"
+            return code        
+
+        for h_dif, m in sortedmoves:
+            w = Player.Empty
             if m[2] > state.getHeuristicCurrentPlayer():
                 continue
-            w = self.find_best_move(wallkey, wallCountKey, m[3])
+            intend += "  "
+            print(
+                intend
+                + p_print(cp)
+                + " "
+                + dir_print(m[0])
+                + " "
+                + dir_print(m[1])
+                + " "
+                + codeinit(posKey, init)
+                + " "
+                + "\033[96m"
+                + str(m[2])
+                + "\033[0m"
+                + " "
+                + "\033[97m"
+                + str(h_dif)
+                + "\033[0m"
+            )
+            if init == 2:
+                w = self.find_best_move(wallkey, wallCountKey, m[3], 1)
+            elif h_dif < sortedmoves[0][0]:
+                intend = intend[:-2]
+                continue
+            elif -1 < h_dif and h_dif < 2:
+                w = self.find_best_move(wallkey, wallCountKey, m[3])
+            elif h_dif >= 1:
+                w = cp
+            else:
+                w = self.otherPlayer(cp)
 
             if w == cp:
-                good_moves.append(m)
+                good_moves.append((h_dif, m))
                 winner = cp
+            intend = intend[:-2]
+
+        good_moves.sort()
 
         winner = cp if winner == cp else self.otherPlayer(cp)
 
         cacheMap[wallkey][wallCountKey][cpStr][posKey]["winner"] = winner
         cacheMap[wallkey][wallCountKey][cpStr][posKey]["moves"] += good_moves
         return winner
+
+    def get_HeursiticDiff(self, state, state2):
+        if not isinstance(state, Playerstate):
+            return Player.Empty
+        if not isinstance(state2, Playerstate):
+            return Player.Empty
+
+        p_now = state.p_now
+        p_other = self.otherPlayer(p_now)
+        h_now = state2.getHeuristic(p_now)
+        h_other = state.getHeuristic(p_other)
+        return h_other - h_now
 
     def wrapper_find_best_move(self):
         global cacheMap
@@ -312,7 +389,7 @@ class Game:
         p2_h = self.find_heuristic(p2_pos[0], p2_pos[1], Player.P2)
         state = Playerstate(p1_pos, p2_pos, self.currentPlayer, p1_h, p2_h)
 
-        w = self.find_best_move(wallkey, wallCountKey, state)
+        w = self.find_best_move(wallkey, wallCountKey, state, 2)
         return w
 
     def execute_undo(self, p, move):
@@ -542,6 +619,8 @@ class Game:
         posKey = get_pos_key(p1_x, p1_y, p2_x, p2_y)
         wallCountKey = get_wallCount_key(self.walls_left[0], self.walls_left[1])
         goodmoves = cacheMap[wallkey][wallCountKey][cpStr][posKey]["moves"]
+        if len(goodmoves) > 0:
+            goodmoves = [x for _, x in goodmoves]
 
         moves = self.b.getPlayerMoves(state)
         moves.sort(key=lambda x: x[2])

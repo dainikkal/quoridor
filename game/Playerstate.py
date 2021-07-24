@@ -52,5 +52,10 @@ class Playerstate:
             return self.h_p1
         return self.h_p2
 
+    def getHeuristic(self, p):
+        if Player.P1 == p:
+            return self.h_p1
+        return self.h_p2
+
 
 Playerstate.newPlayerstate = staticmethod(Playerstate.newPlayerstate)

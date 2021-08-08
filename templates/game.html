@@ -1,27 +1,54 @@
-{% extends 'index.html' %}
+{% extends 'index.html' %} {% block player2 %}
+<p class="p2info {{currentplayer[1]}}">
+  Player 2 | Walls Left:{{p2walls}} {{p2ai}}
+</p>
+<p>{% endblock player2 %} {% block table %}</p>
 
-{% block player2 %}
-<p class="p2info {{currentplayer[1]}}"> Player 2 | Walls Left:{{p2walls}} {{p2ai}}<p>
-{% endblock player2 %}
-
-{% block table %}
 <table>
-{% for current_r in range(17) %}
+  {% for current_r in range(17) %}
   <tr class="row{{current_r}}">
-  {% for current_c in range(17) %}
-    <td class="{{classes[current_r*17+current_c]}}">
-    {% if links[current_r*17+current_c] != "" %}
-    <a href="/{{links[current_r*17+current_c]}}"></a>
+    {%if current_r % 2 == 0%}
+    <td class="Info"><a>{{'%0.0f '| format(9 - current_r / 2|float)}}</a></td>
     {% else %}
-    <a></a>
-    {% endif %}
+    <td class=""></td>
+    {% endif %} {% for current_c in range(17) %}
+    <td class="{{classes[current_r*17+current_c]}}">
+      {% if links[current_r*17+current_c] != "" %}
+      <a href="/{{links[current_r*17+current_c]}}"></a>
+      {% else %}
+      <a></a>
+      {% endif %}
     </td>
+    {% endfor %}
+  </tr>
   {% endfor %}
   <tr>
-{% endfor %}
+    {% for current_c in range(18) %} {%if current_c == 1%}
+    <td class="Info"><a>A</a></td>
+    {% elif current_c == 3%}
+    <td class="Info"><a>B</a></td>
+    {% elif current_c == 5%}
+    <td class="Info"><a>C</a></td>
+    {% elif current_c == 7%}
+    <td class="Info"><a>D</a></td>
+    {% elif current_c == 9%}
+    <td class="Info"><a>E</a></td>
+    {% elif current_c == 11%}
+    <td class="Info"><a>F</a></td>
+    {% elif current_c == 13%}
+    <td class="Info"><a>G</a></td>
+    {% elif current_c == 15%}
+    <td class="Info"><a>H</a></td>
+    {% elif current_c == 17%}
+    <td class="Info"><a>I</a></td>
+    {% else %}
+    <td class=""></td>
+    {% endif %} {% endfor %}
+  </tr>
 </table>
-{% endblock table %}
 
-{% block player1 %}
-<p class="p1info {{currentplayer[0]}}"> Player 1 | Walls Left:{{p1walls}} {{p1ai}}<p>
-{% endblock player1 %}
+{% endblock table %} {% block player1 %}
+<p class="p1info {{currentplayer[0]}}">
+  Player 1 | Walls Left:{{p1walls}} {{p1ai}}
+</p>
+<p>{% endblock player1 %}</p>
